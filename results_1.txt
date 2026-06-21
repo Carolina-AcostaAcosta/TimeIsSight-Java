@@ -1,0 +1,9 @@
+Simulación 1
+1. Tiempo de ejecución: 3600.06 segundos
+2. Tamaño de la instancia: 15000 pacientes
+3. Tamaño de la agenda: 81510 minutos operativos distribuidos en 365 días de calendario
+4. Configuración: Sin Agenda Paralela
+5. Casos no factibles (superan plazo crítico): 8
+6. Media de tiempo de espera para el diagnóstico: 4.81 días de calendario
+7. Citas que el solver no pudo acomodar por falta de tiempo / capacidad: 56617
+--------------------------------------------------
