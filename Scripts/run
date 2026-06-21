@@ -1,0 +1,3 @@
+#!/bin/bash
+# Compila y ejecuta pasándole los argumentos que escribas en la consola
+mvn compile exec:java -Dexec.mainClass="Main" -Dexec.args="$*"
