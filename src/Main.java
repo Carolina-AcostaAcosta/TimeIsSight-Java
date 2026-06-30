@@ -20,11 +20,17 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 public class Main {
   private record Escenario(String nombre, boolean usaAgendaParalela, int diasParalelaMes) {}
   private record DatosArranque(String accion, int pacientes, int dias, String archivoJson) {}
   
   public static void main(String[] args) {
+    Logger timefoldLogger = (Logger) LoggerFactory.getLogger("ai.timefold.solver");
+    timefoldLogger.setLevel(Level.WARN);
     configurarTrazabilidadConsola();
     System.out.println("=== SISTEMA DE SIMULACIÓN: DIAGNÓSTICO DE GLAUCOMA ===");
     ConfiguracionCLI config = new ConfiguracionCLI(args);
