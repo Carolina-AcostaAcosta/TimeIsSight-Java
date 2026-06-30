@@ -223,7 +223,7 @@ public class GeneradorInstancias {
       
       String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
       
-      String nombreArchivo = String.format("instancias/P%d_D%d_%s.json",
+      String nombreArchivo = String.format("instances/P%d_D%d_%s.json",
           opt.cantidadPacientes(), opt.totalDias(), fechaHora);
       
       new ObjectMapper().writerWithDefaultPrettyPrinter()
