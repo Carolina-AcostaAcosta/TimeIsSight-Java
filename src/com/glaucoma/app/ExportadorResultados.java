@@ -1,30 +1,57 @@
 package com.glaucoma.app;
 
-import java.io.FileWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.File;
+
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import java.util.List;
 
 public class ExportadorResultados {
+  public record InformeGlobal(Metadata metadata, java.util.List<SimulacionResult> simulaciones) {}
+  public record Metadata(int total_pacientes, int dias_agenda, int minutos_operativos) {}
+  public record SimulacionResult(
+      String configuracion,
+      int agenda_paralela_dias,
+      double tiempo_ejecucion_segundos,
+      int casos_infactibles,
+      double tiempo_medio_diagnostico_dias,
+      int citas_sin_asignar_tiempo,
+      int citas_sin_asignar_capacidad
+  ) {}
   
-  public static void guardar(String archivo, int numSim, long tiempoMs, OpcionesSimulacion opciones,
-                             int totalMinutos, int casosInfactibles, double mediaEspera) {
-    try (PrintWriter writer = new PrintWriter(new FileWriter(archivo, true))) {
-      writer.println("Simulación " + numSim);
-      writer.println("1. Tiempo de ejecución: " + (tiempoMs / 1000.0) + " segundos");
-      writer.println("2. Tamaño de la instancia: " + opciones.cantidadPacientes() + " pacientes");
-      writer.println("3. Tamaño de la agenda: " + totalMinutos + " minutos operativos distribuidos en " + opciones.totalDias() + " días de calendario");
+  public static String generarRutaResultados(int pacientes, int dias) {
+    try {
+      // 1. Crea la carpeta si no existe
+      Files.createDirectories(Paths.get("executions"));
       
-      if (opciones.usarAgendaParalela()) {
-        writer.println("4. Configuración: Con Agenda Paralela (" + opciones.diasParalelaMes() + " días al mes)");
-      } else {
-        writer.println("4. Configuración: Sin Agenda Paralela");
-      }
+      // 2. Genera el timestamp exacto
+      String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
       
-      writer.println("5. Casos no factibles (superan plazo crítico): " + casosInfactibles);
-      writer.printf("6. Media de tiempo de espera para el diagnóstico: %.2f días de calendario\n", mediaEspera);
-      writer.println("--------------------------------------------------");
+      // 3. Formatea el string final
+      return String.format("executions/results_P%d_D%d_%s.json", pacientes, dias, fechaHora);
+      
     } catch (IOException e) {
-      System.err.println("Error crítico al intentar guardar en el archivo de texto: " + e.getMessage());
+      System.err.println("Error al crear el directorio 'executions': " + e.getMessage());
+      return "Results_Error_P" + pacientes + ".txt"; // Fallback de seguridad
+    }
+  }
+  
+  public static void guardar(List<SimulacionResult> resultadosJson, OpcionesSimulacion opciones) {
+    try {
+      Metadata meta = new Metadata(opciones.cantidadPacientes(), opciones.totalDias(), GeneradorInstancias.calcularMinutosOperativos(opciones.totalDias()));
+      InformeGlobal informe = new InformeGlobal(meta, resultadosJson);
+      
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      mapper.writeValue(new File(generarRutaResultados(opciones.cantidadPacientes(), opciones.totalDias())), informe);
+    } catch (IOException e) {
+      System.err.println("Error crítico al intentar guardar en el archivo: " + e.getMessage());
     }
   }
 }
