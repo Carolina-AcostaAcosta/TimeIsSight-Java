@@ -5,7 +5,5 @@ import java.util.List;
 
 public record InstanciaProblema(
     List<Paciente> pacientes,
-    List<Recurso> recursos,
-    List<Estacion> estaciones,
-    List<Cita> citas
+    int totalDias // Guardamos esto para saber de cuántos días era la instancia al cargarla
 ) {}

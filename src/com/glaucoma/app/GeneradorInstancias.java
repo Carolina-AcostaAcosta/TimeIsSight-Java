@@ -2,6 +2,9 @@ package com.glaucoma.app;
 
 import com.glaucoma.domain.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,9 +14,13 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GeneradorInstancias {
-  
+  public record Planificacion(List<Paciente> pacientes, List<Cita> citas) {}
   private static final Random rand = new Random();
+  private static final Logger logger = LoggerFactory.getLogger(GeneradorInstancias.class);
   
   // Genera el mapeo: Índice de día de trabajo -> Día real del año (0 a 364)
   public static List<Integer> generarMapeoDias(int totalDias) {
@@ -59,205 +66,171 @@ public class GeneradorInstancias {
     return mapa.get(diaOperacional);
   }
   
-  public static AgendaGlaucoma generarProblema(OpcionesSimulacion opciones) {
-    int totalMinutos = calcularMinutosOperativos(opciones.totalDias());
-
-//        List<Integer> rangoMinutos = new ArrayList<>();
-//        for (int i = 0; i < totalMinutos; i++) rangoMinutos.add(i);
+  public static int obtenerDiaCalendarioReal(int minutos) {
+    int diaLaborable = minutos / 330;
+    int semanasCompletas = diaLaborable / 5;
+    int diasRestantesSemana = diaLaborable % 5;
     
+    // Cada semana completa transcurrida aporta 7 días reales a la línea de tiempo
+    return (semanasCompletas * 7) + diasRestantesSemana;
+  }
+  
+  public static InstanciaProblema generarPoblacionBase(int cantidadPacientes, int totalDias) {
+    return new InstanciaProblema(generarPacientesSimulados(cantidadPacientes, totalDias), totalDias);
+  }
+  
+  public static AgendaGlaucoma generarProblema(OpcionesSimulacion opciones, List<Paciente> pacientes) {
     List<Estacion> estaciones = crearEstaciones(opciones.usarAgendaParalela());
     List<Recurso> recursos = crearRecursos(opciones.usarAgendaParalela());
     
-    List<Paciente> pacientes = generarPacientesSimulados(opciones.cantidadPacientes(), totalMinutos);
-    List<Cita> citas = crearCitasParaPacientes(pacientes, estaciones, recursos, opciones.usarAgendaParalela(), opciones.totalDias());
+    Planificacion planificacion = procesarCircuitosGlobales(pacientes, estaciones, recursos, opciones.usarAgendaParalela(), opciones.diasParalelaMes());
+    
+    List<Cita> citas = planificacion.citas;
+    pacientes = planificacion.pacientes;
     
     return new AgendaGlaucoma(pacientes, recursos, estaciones, citas);
   }
   
   private static List<Estacion> crearEstaciones(boolean paralela) {
-    List<Estacion> lista = new ArrayList<>();
-    lista.add(new Estacion("E1", "Triaje de Urgencias"));
-    lista.add(new Estacion("E2", "Pruebas Diagnósticas"));
-    lista.add(new Estacion("E3", "Consulta CAE"));
-    lista.add(new Estacion("E4", "Consulta CHUC"));
-    if (paralela) lista.add(new Estacion("E5", "Consulta Glaucoma (Monográfica)"));
-    return lista;
+    List<Estacion> estaciones = new ArrayList<>();
+    estaciones.add(new Estacion("E1", "Triaje de Urgencias"));
+    estaciones.add(new Estacion("E2", "Pruebas Diagnósticas"));
+    estaciones.add(new Estacion("E3", "Consulta CAE"));
+    estaciones.add(new Estacion("E4", "Consulta CHUC"));
+    if (paralela) estaciones.add(new Estacion("E5", "Consulta Glaucoma (Monográfica)"));
+    return estaciones;
   }
   
   private static List<Recurso> crearRecursos(boolean paralela) {
-    List<Recurso> lista = new ArrayList<>();
-    lista.add(new Recurso("R_Triaje", "TriajeUrgencias", 20));
+    List<Recurso> recursos = new ArrayList<>();
+    recursos.add(new Recurso("R_Triaje", "TriajeUrgencias", 20));
     
     // Creamos a los 6 doctores físicos de los CAE (3 centros x 2 doctores)
-    for (int i = 1; i <= 6; i++) lista.add(new Recurso("R_CAE_" + i, "Doctor CAE " + i, 0));
+    for (int i = 1; i <= 6; i++) recursos.add(new Recurso("R_CAE_" + i, "Doctor CAE " + i, 0));
     
-    // Creamos a los 2 doctores físicos del CHUC
-    for (int i = 1; i <= 2; i++) lista.add(new Recurso("R_CHUC_" + i, "Doctor CHUC " + i, 0));
+    // Creamos a los 34 doctores físicos del CHUC
+    for (int i = 1; i <= 34; i++) recursos.add(new Recurso("R_CHUC_" + i, "Doctor CHUC " + i, 0));
     
     // Las máquinas de pruebas
-    lista.add(new Recurso("R_Camp", "Campimetría", 15));
-    lista.add(new Recurso("R_OCT", "OCT", 10));
-    lista.add(new Recurso("R_Retino", "Retinografía", 10));
-    lista.add(new Recurso("R_Tono", "Tonometría", 3));
+    // 1 máquina de cada prueba por CAE
+    for (int i = 1; i <= 3; ++i) {
+      recursos.add(new Recurso("R_Camp_CAE_" + i, "Campimetría CAE " + i, 15));
+      recursos.add(new Recurso("R_OCT_CAE_" + i, "OCT CAE " + i, 15));
+      recursos.add(new Recurso("R_Retino_CAE_" + i, "Retinografía CAE " + i, 15));
+      recursos.add(new Recurso("R_Tono_CAE_" + i, "Tonometría CAE " + i, 5));
+    }
+    
+    // 1 máquina de cada prueba para el CHUC
+    recursos.add(new Recurso("R_Camp_CHUC", "Campimetría CHUC", 15));
+    recursos.add(new Recurso("R_OCT_CHUC", "OCT CHUC", 15));
+    recursos.add(new Recurso("R_Retino_CHUC", "Retinografía CHUC", 15));
+    recursos.add(new Recurso("R_Tono_CHUC", "Tonometría CHUC", 5));
     
     // Otros recursos específicos
-    lista.add(new Recurso("R_UrgCAE", "UrgenteCAE5plazas", 30));
-    lista.add(new Recurso("R_ValCAE", "ValidaciónCAE", 10));
+    recursos.add(new Recurso("R_UrgCAE", "UrgenteCAE5plazas", 30));
     
     // En agenda paralela, asignamos tiempo monográfico
     if (paralela) {
-      for (int i = 1; i <= 3; i++) lista.add(new Recurso("R_GlaucoCAE_" + i, "Doctor Glaucoma CAE " + i, 0));
+      for (int i = 1; i <= 3; i++) recursos.add(new Recurso("R_GlaucoCAE_" + i, "Doctor Glaucoma CAE " + i, 0));
     }
-    return lista;
+    return recursos;
   }
   
-  private static List<Paciente> generarPacientesSimulados(int cantidad, int totalMinutosDisponibles) {
-    List<Paciente> lista = new ArrayList<>();
+  public static List<Paciente> generarPacientesSimulados(int cantidad, int totalDias) {
+    int totalMinutosDisponibles = calcularMinutosOperativos(totalDias);
+    List<Paciente> pacientes = new ArrayList<>();
     
     for (int i = 1; i <= cantidad; i++) {
       String id = "P" + String.format("%04d", i);
       int limiteLlegada = Math.max(1, totalMinutosDisponibles - 500);
       int ti = rand.nextInt(limiteLlegada);
       
-      boolean entraPorUrgencias = rand.nextDouble() < 0.15; // Asumimos 15% entrada por urgencias
-      boolean esGlaucoma = rand.nextDouble() < 0.08; // 8% de los pacientes derivados
+      boolean entraPorUrgencias = rand.nextDouble() < 0.07;
+      boolean esGlaucoma = rand.nextDouble() < 0.08;
       
       int gi = 0;
-      int plazoDias = 120; // Por defecto: sospecha / normal
+      int plazoDias = totalDias;
       
       if (esGlaucoma) {
-        double estratoGlaucoma = rand.nextDouble();
-        if (estratoGlaucoma < 0.50) { gi = 1; plazoDias = 90; } // Leve
-        else if (estratoGlaucoma < 0.85) { gi = 2; plazoDias = 30; } // Moderado
-        else { gi = 3; plazoDias = 1; } // Avanzado/Agudo
-      }
-      
-      // Derivación CAE (70%) vs CHUC (30%)
-      String circuito = (rand.nextDouble() < 0.70) ? "CAE" : "CHUC";
-      
-      // Modificadores de gravedad si va a CHUC y NO es glaucoma diagnosticado
-      if (!esGlaucoma && circuito.equals("CHUC")) {
-        double estratoCHUC = rand.nextDouble();
-        if (estratoCHUC < 0.20) { gi = 2; plazoDias = 30; } // 20% Preferente
-        else if (estratoCHUC < 0.25) { gi = 3; plazoDias = 1; } // 5% Urgente
-      }
-      
-      // Añadimos prefijo al circuito si entra por urgencias para procesarlo luego
-      if (entraPorUrgencias) circuito = "URG_" + circuito;
-      
-      int diMinutos = plazoDias * 330;
-      lista.add(new Paciente(id, ti, gi, diMinutos, circuito));
-    }
-    return lista;
-  }
-  
-  private static List<Cita> crearCitasParaPacientes(List<Paciente> pacientes, List<Estacion> estaciones,
-                                                    List<Recurso> recursos, boolean paralela, int totalDias) {
-    int finSimulacionCalculado = calcularMinutosOperativos(totalDias);
-    List<Cita> listaCitas = new ArrayList<>();
-    int idCita = 1;
-    
-    // Extraer estaciones para fácil acceso
-    Estacion eUrgencias = estaciones.get(0);
-    Estacion ePruebas = estaciones.get(1);
-    Estacion eCae = estaciones.get(2);
-    Estacion eChuc = estaciones.get(3);
-    Estacion eGlaucoma = paralela ? estaciones.get(4) : null;
-    
-    // Buscadores de recursos (doctores físicos)
-    List<Recurso> doctoresCAE = recursos.stream().filter(r -> r.getId().startsWith("R_CAE")).toList();
-    List<Recurso> doctoresCHUC = recursos.stream().filter(r -> r.getId().startsWith("R_CHUC")).toList();
-    List<Recurso> doctoresGlaucoma = paralela ? recursos.stream().filter(r -> r.getId().startsWith("R_GlaucoCAE")).toList() : null;
-    
-    // Buscadores de recursos (máquinas y triaje)
-    Recurso rTriaje = recursos.stream().filter(r -> r.getId().equals("R_Triaje")).findFirst().get();
-    Recurso rOct = recursos.stream().filter(r -> r.getId().equals("R_OCT")).findFirst().get();
-    Recurso rCamp = recursos.stream().filter(r -> r.getId().equals("R_Camp")).findFirst().get();
-    Recurso rTono = recursos.stream().filter(r -> r.getId().equals("R_Tono")).findFirst().get();
-    Recurso rRetino = recursos.stream().filter(r -> r.getId().equals("R_Retino")).findFirst().get();
-    
-    for (Paciente p : pacientes) {
-      // 1. TRIAJE (Solo para pacientes que entran por la vía de Urgencias)
-      if (p.getCircuito().startsWith("URG_")) {
-        listaCitas.add(new Cita("C-" + idCita++, p, eUrgencias, rTriaje, 20, false, finSimulacionCalculado));
-      }
-      
-      // 2. PRUEBAS DIAGNÓSTICAS
-      // Todos los pacientes de la agenda se hacen las pruebas básicas
-      listaCitas.add(new Cita("C-" + idCita++, p, ePruebas, rTono, 3, false, finSimulacionCalculado));
-      listaCitas.add(new Cita("C-" + idCita++, p, ePruebas, rRetino, 10, false, finSimulacionCalculado));
-      
-      // Solo el 8% (los identificados con sospecha/diagnóstico de glaucoma) consumen OCT y Campimetría
-      if (p.getGi() > 0) {
-        listaCitas.add(new Cita("C-" + idCita++, p, ePruebas, rOct, 10, false, finSimulacionCalculado));
-        listaCitas.add(new Cita("C-" + idCita++, p, ePruebas, rCamp, 15, false, finSimulacionCalculado));
-      }
-      
-      // 3. ENRUTAMIENTO MÉDICO (Árbol de decisión real)
-      
-      // CASO A: Agenda Paralela activa y el paciente pertenece al 8% de Glaucoma
-      if (paralela && p.getGi() > 0) {
-        // Se desvían directamente a la consulta monográfica liberando el CAE general
-        Recurso docMonografico = doctoresGlaucoma.get(rand.nextInt(doctoresGlaucoma.size()));
-        listaCitas.add(new Cita("C-" + idCita++, p, eGlaucoma, docMonografico, 15, true, finSimulacionCalculado)); // Diagnóstico final aquí (15 min)
-      }
-      // CASO B: Agenda Normal (O pacientes no-glaucoma en agenda paralela)
-      else {
-        // El 100% de estos pacientes van obligatoriamente primero al CAE (Primera consulta = 30 min)
-        Recurso docCAE = doctoresCAE.get(rand.nextInt(doctoresCAE.size()));
-        
-        // Determinamos el destino según tu estadística: 30% se derivan, 70% se resuelven en el CAE
-        boolean seDerivaAlCHUC = rand.nextDouble() < 0.30;
-        
-        if (seDerivaAlCHUC) {
-          // SUB-CASO B.1: Se deriva (30%). La cita del CAE consumió tiempo pero NO dio el diagnóstico definitivo
-          listaCitas.add(new Cita("C-" + idCita++, p, eCae, docCAE, 30, false, finSimulacionCalculado)); // esDiagnosticoFinal = false
-          
-          // El paciente viaja al hospital central (CHUC) para otra primera consulta de 30 min
-          Recurso docCHUC = doctoresCHUC.get(rand.nextInt(doctoresCHUC.size()));
-          listaCitas.add(new Cita("C-" + idCita++, p, eChuc, docCHUC, 30, true, finSimulacionCalculado)); // ¡Aquí SÍ obtiene su diagnóstico final!
-          
-          // Agenda de seguimiento: El 90% de los pacientes del CHUC se quedan en el sistema de revisiones
-          if (rand.nextDouble() < 0.90) {
-            // Ocupa un hueco de consulta sucesiva (15 min) con el mismo pool de doctores del CHUC
-            listaCitas.add(new Cita("C-" + idCita++, p, eChuc, docCHUC, 15, false, finSimulacionCalculado)); // Seguimiento (no cuenta para T_diag)
+        double estratoSospecha = rand.nextDouble();
+        if (estratoSospecha < 0.375) {
+          double estratoGlaucoma = rand.nextDouble();
+          if (estratoGlaucoma < 0.50) {
+            gi = 2;
+            plazoDias = 90;
+          } else if (estratoGlaucoma < 0.85) {
+            gi = 3;
+            plazoDias = 30;
+          } else {
+            gi = 4;
+            plazoDias = 1;
           }
         } else {
-          // SUB-CASO B.2: No se deriva (70%). El paciente se resuelve por completo en la periferia
-          listaCitas.add(new Cita("C-" + idCita++, p, eCae, docCAE, 30, true, finSimulacionCalculado)); // ¡Su diagnóstico final se dio en el CAE!
-          
-          // Agenda de seguimiento: El 30% de los pacientes del CAE se quedan en el sistema de revisiones
-          if (rand.nextDouble() < 0.30) {
-            // Ocupa un hueco de consulta sucesiva (15 min) con el mismo pool de doctores del CHUC
-            listaCitas.add(new Cita("C-" + idCita++, p, eCae, docCAE, 15, false, finSimulacionCalculado)); // Seguimiento (no cuenta para T_diag)
-          }
+          gi = 1;
+          plazoDias = 120;
         }
       }
+      
+      boolean seDerivaAlCHUC = rand.nextDouble() < 0.30;
+      // Modificadores de gravedad si va a CHUC
+      if (seDerivaAlCHUC) {
+        double estratoCHUC = rand.nextDouble();
+        if (estratoCHUC < 0.20) {
+          gi = 3;
+          plazoDias = 30;
+        } else if (estratoCHUC < 0.25) {
+          gi = 4;
+          plazoDias = 1;
+        }
+      }
+      
+      // 2. ¿Necesita seguimiento (revisiones)?
+      // Según tu lógica: 90% si va al CHUC, 30% si se queda en el CAE
+      boolean necesitaSeguimiento;
+      if (seDerivaAlCHUC) {
+        necesitaSeguimiento = rand.nextDouble() < 0.90;
+      } else {
+        necesitaSeguimiento = rand.nextDouble() < 0.66;
+      }
+      
+      int diMinutos = plazoDias * 330;
+      
+      // El CAE que se le asigna de los tres disponibles
+      int numCae = rand.nextInt(3) + 1;
+      
+      // El nuevo constructor de Paciente recibirá los booleanos estáticos
+      pacientes.add(new Paciente(id, ti, gi, diMinutos, entraPorUrgencias, esGlaucoma, seDerivaAlCHUC, necesitaSeguimiento, numCae, totalDias));
     }
-    return listaCitas;
+    
+    return pacientes;
   }
   
-  public static void guardarInstancia(AgendaGlaucoma agenda, OpcionesSimulacion opt) {
-    InstanciaProblema contenedor = new InstanciaProblema(
-        agenda.getListaPacientes(),
-        agenda.getListaRecursos(),
-        agenda.getListaEstaciones(),
-        agenda.getListaCitas()
-    );
+  public static Planificacion procesarCircuitosGlobales(List<Paciente> pacientes, List<Estacion> estaciones,
+                                                     List<Recurso> recursos, boolean usarAgendaParalela, int diasParalelaMes) {
+    List<Cita> listaCitasGlobal = new ArrayList<>();
+    
+    for (Paciente paciente : pacientes) {
+      paciente.generarCircuito(estaciones, recursos, usarAgendaParalela, diasParalelaMes, calcularMinutosOperativos(paciente.getTotalDias()));
+      listaCitasGlobal.addAll(paciente.getCircuito());
+    }
+    return new Planificacion(pacientes, listaCitasGlobal);
+  }
+  
+  public static void guardarInstancia(InstanciaProblema instancia, OpcionesSimulacion opt) {
     
     try {
       Files.createDirectories(Paths.get("instancias"));
       
-      String nombreArchivo = String.format("instancias/P%d_A%d_%s_%d.json",
-          opt.cantidadPacientes(), opt.totalDias(),
-          (opt.usarAgendaParalela() ? "PAR" : "STD"),
-          opt.diasParalelaMes());
+      String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+      
+      String nombreArchivo = String.format("instancias/P%d_D%d_%s.json",
+          opt.cantidadPacientes(), opt.totalDias(), fechaHora);
       
       new ObjectMapper().writerWithDefaultPrettyPrinter()
-          .writeValue(new File(nombreArchivo), contenedor);
+          .writeValue(new File(nombreArchivo), instancia);
       
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Error al guardar la instancia.", e);
     }
   }
 }
