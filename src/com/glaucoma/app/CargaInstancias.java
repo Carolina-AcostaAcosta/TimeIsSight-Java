@@ -10,7 +10,7 @@ public class CargaInstancias {
   public static InstanciaProblema cargarDesdeJSON(String nombreArchivo) {
     ObjectMapper mapper = new ObjectMapper();
     try {
-      return mapper.readValue(new File("instancias/" + nombreArchivo), InstanciaProblema.class);
+      return mapper.readValue(new File("instances/" + nombreArchivo), InstanciaProblema.class);
     } catch (IOException e) {
       System.err.println("Error al cargar la instancia: " + e.getMessage());
       return null;
