@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.glaucoma.app.GeneradorInstancias;
 
 @PlanningEntity
 public class Cita {
@@ -20,11 +19,7 @@ public class Cita {
   private int pij; // Tiempo de procesamiento en minutos para este paciente en esta estación
   private boolean esDiagnosticoFinal;
   private int minutoFinSimulacion;
-
-//    // Esta es la variable de decisión (x_ijt = 1 en el minuto t).
-//    // Al principio es null, y el algoritmo se encargará de asignarle un número (minuto).
-//    @PlanningVariable(valueRangeProviderRefs = "minuteRange")
-//    private Integer t;
+  private int diasParalelaMes;
   
   @PlanningVariable(valueRangeProviderRefs = {"rango5min", "rango10min", "rango15min"})
   private Integer t;
@@ -85,7 +80,7 @@ public class Cita {
   }
   
   // Constructor que usarás tú para crear las citas iniciales de la simulación
-  public Cita(String id, Paciente paciente, Estacion estacion, Recurso recurso, int pij, boolean esDiagnosticoFinal, int minutoFinSimulacion) {
+  public Cita(String id, Paciente paciente, Estacion estacion, Recurso recurso, int pij, boolean esDiagnosticoFinal, int minutoFinSimulacion, int diasParalelaMes) {
     this.id = id;
     this.paciente = paciente;
     this.estacion = estacion;
@@ -94,6 +89,7 @@ public class Cita {
     this.esDiagnosticoFinal = esDiagnosticoFinal;
     this.t = null; // Empieza sin hora asignada
     this.minutoFinSimulacion = minutoFinSimulacion;
+    this.diasParalelaMes = diasParalelaMes;
   }
   
   // Getters y Setters comunes
@@ -102,24 +98,46 @@ public class Cita {
   public Estacion getEstacion() { return estacion; }
   public Recurso getRecurso() { return recurso; }
   public int getPij() { return pij; }
+  public int getDiasParalelaMes() { return diasParalelaMes; }
   
   public void setEsDiagnosticoFinal(boolean esDiagnosticoFinal) { this.esDiagnosticoFinal = esDiagnosticoFinal; }
+  public void setDiasParalelaMes(int diasParalelaMes) { this.diasParalelaMes = diasParalelaMes; }
   
   // El motor NECESITA un Getter y un Setter para la variable de planificación
   public Integer getT() { return t; }
   public void setT(Integer t) { this.t = t; }
   public void setMinutoFinSimulacion(int minutoFinSimulacion) { this.minutoFinSimulacion = minutoFinSimulacion; }
   
-  // --- MÉTODOS AUXILIARES EXTRA (Nos facilitarán la vida con las restricciones) ---
+  // --- MÉTODOS AUXILIARES EXTRA ---
   
-  // Calcula automáticamente en qué minuto terminaría la cita
   public Integer getEndMinute() {
     if (t == null) return null;
     return t + pij;
   }
   
-  // Comprueba si esta cita representa el diagnóstico final del paciente
   public boolean esCitaDiagnosticoFinal() {
     return esDiagnosticoFinal;
+  }
+  
+  public boolean isPrueba() {
+    return estacion.nombre().equals("Pruebas Diagnósticas");
+  }
+  
+  public String getCentro() {
+    if (recurso.id().contains("HUC") || recurso.id().contains("CHUC")) return "HUC";
+    return "CAE";
+  }
+  
+  public boolean isDiaParalela() {
+    if (this.t == null) return false;
+    int diaActual = this.t / 330;
+    int diaDelMes = diaActual % 20;
+    
+    return switch (this.diasParalelaMes) {
+      case 2 -> diaDelMes == 4 || diaDelMes == 14;
+      case 3 -> diaDelMes == 4 || diaDelMes == 9 || diaDelMes == 14;
+      case 4 -> diaDelMes == 4 || diaDelMes == 9 || diaDelMes == 14 || diaDelMes == 19;
+      default -> false;
+    };
   }
 }
