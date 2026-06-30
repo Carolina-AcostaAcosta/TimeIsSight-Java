@@ -3,7 +3,6 @@ package com.glaucoma.domain;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-//import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 
 import java.util.List;
@@ -15,11 +14,6 @@ public class AgendaGlaucoma {
   private List<Paciente> listaPacientes;
   private List<Recurso> listaRecursos;
   private List<Estacion> listaEstaciones;
-  
-  // 2. El abanico de minutos disponibles en la simulación (ej.: del minuto 0 al 43200 de un mes)
-  // El motor leerá este rango gracias a la etiqueta @ValueRangeProvider
-//    @ValueRangeProvider(id = "minuteRange")
-//    private List<Integer> rangoMinutos;
   
   // 3. Las Entidades de Planificación (El conjunto de citas que hay que mover en el tiempo)
   @PlanningEntityCollectionProperty
@@ -55,9 +49,6 @@ public class AgendaGlaucoma {
   
   public List<Estacion> getListaEstaciones() { return listaEstaciones; }
   public void setListaEstaciones(List<Estacion> listaEstaciones) { this.listaEstaciones = listaEstaciones; }
-
-//    public List<Integer> getRangoMinutos() { return rangoMinutos; }
-//    public void setRangoMinutos(List<Integer> rangoMinutos) { this.rangoMinutos = rangoMinutos; }
   
   public List<Cita> getListaCitas() { return listaCitas; }
   public void setListaCitas(List<Cita> listaCitas) { this.listaCitas = listaCitas; }
