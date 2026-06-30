@@ -1,0 +1,40 @@
+{
+  "metadata" : {
+    "total_pacientes" : 3750,
+    "dias_agenda" : 90,
+    "minutos_operativos" : 20460
+  },
+  "simulaciones" : [ {
+    "configuracion" : "ESTÁNDAR (Sin Agenda Paralela)",
+    "agenda_paralela_dias" : 0,
+    "tiempo_ejecucion_segundos" : 1200.011,
+    "casos_infactibles" : 204,
+    "tiempo_medio_diagnostico_dias" : 33.05594405594405,
+    "citas_sin_asignar_tiempo" : 0,
+    "citas_sin_asignar_capacidad" : 0
+  }, {
+    "configuracion" : "PARALELA (2 Días/Mes)",
+    "agenda_paralela_dias" : 2,
+    "tiempo_ejecucion_segundos" : 1200.001,
+    "casos_infactibles" : 183,
+    "tiempo_medio_diagnostico_dias" : 29.456293706293707,
+    "citas_sin_asignar_tiempo" : 0,
+    "citas_sin_asignar_capacidad" : 0
+  }, {
+    "configuracion" : "PARALELA (3 Días/Mes)",
+    "agenda_paralela_dias" : 3,
+    "tiempo_ejecucion_segundos" : 1200.001,
+    "casos_infactibles" : 185,
+    "tiempo_medio_diagnostico_dias" : 28.867132867132867,
+    "citas_sin_asignar_tiempo" : 0,
+    "citas_sin_asignar_capacidad" : 0
+  }, {
+    "configuracion" : "PARALELA (4 Días/Mes)",
+    "agenda_paralela_dias" : 4,
+    "tiempo_ejecucion_segundos" : 1200.001,
+    "casos_infactibles" : 175,
+    "tiempo_medio_diagnostico_dias" : 31.323426573426573,
+    "citas_sin_asignar_tiempo" : 0,
+    "citas_sin_asignar_capacidad" : 0
+  } ]
+}
