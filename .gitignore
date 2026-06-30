@@ -34,3 +34,6 @@ bin/
 
 ### Console outputs ###
 /output
+
+### Target - Compilation files ###
+/target
