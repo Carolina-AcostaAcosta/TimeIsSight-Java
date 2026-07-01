@@ -20,17 +20,15 @@ public class Cita {
   private boolean esDiagnosticoFinal;
   private int minutoFinSimulacion;
   private int diasParalelaMes;
+  private String centroCache;
+  private boolean pruebaCache;
   
-  @PlanningVariable(valueRangeProviderRefs = {"rango5min", "rango10min", "rango15min"})
+  @PlanningVariable(valueRangeProviderRefs = {"rango5min"})
   private Integer t;
   
   @JsonIgnore
   @ValueRangeProvider(id = "rango5min")
   public CountableValueRange<Integer> getRango5() {
-    if (this.pij % 5 != 0) {
-      return ValueRangeFactory.createIntValueRange(minutoFinSimulacion, minutoFinSimulacion + 5, 5);
-    }
-    
     int inicioRedondeado = ((this.paciente.getTi() + 4) / 5) * 5;
     
     if (inicioRedondeado >= minutoFinSimulacion) {
@@ -38,40 +36,6 @@ public class Cita {
     }
     
     return ValueRangeFactory.createIntValueRange(inicioRedondeado, minutoFinSimulacion, 5);
-  }
-  
-  @JsonIgnore
-  @ValueRangeProvider(id = "rango10min")
-  public CountableValueRange<Integer> getRango10() {
-    
-    if (this.pij % 10 != 0) {
-      return ValueRangeFactory.createIntValueRange(minutoFinSimulacion, minutoFinSimulacion + 10, 10);
-    }
-    
-    int inicioRedondeado = ((this.paciente.getTi() + 9) / 10) * 10;
-    
-    if (inicioRedondeado >= minutoFinSimulacion) {
-      return ValueRangeFactory.createIntValueRange(minutoFinSimulacion, minutoFinSimulacion + 10, 10);
-    }
-    
-    return ValueRangeFactory.createIntValueRange(inicioRedondeado, minutoFinSimulacion, 10);
-  }
-  
-  @JsonIgnore
-  @ValueRangeProvider(id = "rango15min")
-  public CountableValueRange<Integer> getRango15() {
-    
-    if (this.pij % 15 != 0) {
-      return ValueRangeFactory.createIntValueRange(minutoFinSimulacion, minutoFinSimulacion + 15, 15);
-    }
-    
-    int inicioRedondeado = ((this.paciente.getTi() + 14) / 15) * 15;
-    
-    if (inicioRedondeado >= minutoFinSimulacion) {
-      return ValueRangeFactory.createIntValueRange(minutoFinSimulacion, minutoFinSimulacion + 15, 15);
-    }
-    
-    return ValueRangeFactory.createIntValueRange(inicioRedondeado, minutoFinSimulacion, 15);
   }
   
   // OBLIGATORIO: Java y Timefold necesitan un constructor vacío por defecto
@@ -90,6 +54,8 @@ public class Cita {
     this.t = null; // Empieza sin hora asignada
     this.minutoFinSimulacion = minutoFinSimulacion;
     this.diasParalelaMes = diasParalelaMes;
+    this.centroCache = (recurso.id().contains("HUC") || recurso.id().contains("CHUC")) ? "HUC" : "CAE";
+    this.pruebaCache = estacion.nombre().equals("Pruebas Diagnósticas");
   }
   
   // Getters y Setters comunes
@@ -120,12 +86,11 @@ public class Cita {
   }
   
   public boolean isPrueba() {
-    return estacion.nombre().equals("Pruebas Diagnósticas");
+    return pruebaCache;
   }
   
   public String getCentro() {
-    if (recurso.id().contains("HUC") || recurso.id().contains("CHUC")) return "HUC";
-    return "CAE";
+    return centroCache;
   }
   
   public boolean isDiaParalela() {
