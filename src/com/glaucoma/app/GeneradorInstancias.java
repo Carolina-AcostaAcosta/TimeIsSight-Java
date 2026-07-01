@@ -21,21 +21,28 @@ public class GeneradorInstancias {
   public record Planificacion(List<Paciente> pacientes, List<Cita> citas) {}
   private static final Random rand = new Random();
   private static final Logger logger = LoggerFactory.getLogger(GeneradorInstancias.class);
+  // Cachea el mapeo de días laborables por totalDias, porque ahora se invoca desde las
+  // restricciones del solver (una vez por cada Cita de diagnóstico final evaluada), y
+  // recalcularlo desde cero cada vez sería muy costoso.
+  private static final java.util.Map<Integer, List<Integer>> cacheMapeoDias = new java.util.concurrent.ConcurrentHashMap<>();
   
   // Genera el mapeo: Índice de día de trabajo -> Día real del año (0 a 364)
   public static List<Integer> generarMapeoDias(int totalDias) {
+    return cacheMapeoDias.computeIfAbsent(totalDias, GeneradorInstancias::calcularMapeoDias);
+  }
+  
+  private static List<Integer> calcularMapeoDias(int totalDias) {
     List<Integer> diasCalendarioLaborables = new ArrayList<>();
     List<Integer> diasLaborablesPotenciales = new ArrayList<>();
     
-    for (int d = 0; d < totalDias; d++) {
-      int diaSemana = d % 7; // 0=lunes, 1=martes, ..., 5=sábado, 6=domingo
+    for (int day = 0; day < totalDias; day++) {
+      int diaSemana = day % 7;
       if (diaSemana != 5 && diaSemana != 6) {
-        diasLaborablesPotenciales.add(d);
+        diasLaborablesPotenciales.add(day);
       }
     }
     
-    // Calculamos los 14 festivos anuales de forma proporcional al horizonte temporal
-    int numFestivos = (int) Math.round((totalDias / 365.0) * 14);
+    int numFestivos = (int) Math.round((totalDias / 365.0) * 13);
     Random randCalendario = new Random(42); // Semilla fija para que coincida el calendario en toda la ejecución
     
     List<Integer> festivos = new ArrayList<>();
@@ -46,9 +53,9 @@ public class GeneradorInstancias {
       }
     }
     
-    for (int d : diasLaborablesPotenciales) {
-      if (!festivos.contains(d)) {
-        diasCalendarioLaborables.add(d);
+    for (int day : diasLaborablesPotenciales) {
+      if (!festivos.contains(day)) {
+        diasCalendarioLaborables.add(day);
       }
     }
     return diasCalendarioLaborables;
@@ -64,15 +71,6 @@ public class GeneradorInstancias {
     List<Integer> mapa = generarMapeoDias(totalDias);
     if (diaOperacional >= mapa.size()) return totalDias - 1;
     return mapa.get(diaOperacional);
-  }
-  
-  public static int obtenerDiaCalendarioReal(int minutos) {
-    int diaLaborable = minutos / 330;
-    int semanasCompletas = diaLaborable / 5;
-    int diasRestantesSemana = diaLaborable % 5;
-    
-    // Cada semana completa transcurrida aporta 7 días reales a la línea de tiempo
-    return (semanasCompletas * 7) + diasRestantesSemana;
   }
   
   public static InstanciaProblema generarPoblacionBase(int cantidadPacientes, int totalDias) {
@@ -126,9 +124,6 @@ public class GeneradorInstancias {
     recursos.add(new Recurso("R_Retino_CHUC", "Retinografía CHUC", 15));
     recursos.add(new Recurso("R_Tono_CHUC", "Tonometría CHUC", 5));
     
-    // Otros recursos específicos
-    recursos.add(new Recurso("R_UrgCAE", "UrgenteCAE5plazas", 30));
-    
     // En agenda paralela, asignamos tiempo monográfico
     if (paralela) {
       for (int i = 1; i <= 3; i++) recursos.add(new Recurso("R_GlaucoCAE_" + i, "Doctor Glaucoma CAE " + i, 0));
@@ -175,12 +170,18 @@ public class GeneradorInstancias {
       // Modificadores de gravedad si va a CHUC
       if (seDerivaAlCHUC) {
         double estratoCHUC = rand.nextDouble();
+        int giCandidato = gi;
+        int plazoCandidato = plazoDias;
         if (estratoCHUC < 0.20) {
-          gi = 3;
-          plazoDias = 30;
+          giCandidato = 3;
+          plazoCandidato = 30;
         } else if (estratoCHUC < 0.25) {
-          gi = 4;
-          plazoDias = 1;
+          giCandidato = 4;
+          plazoCandidato = 1;
+        }
+        if (giCandidato > gi) {
+          gi = giCandidato;
+          plazoDias = plazoCandidato;
         }
       }
       
