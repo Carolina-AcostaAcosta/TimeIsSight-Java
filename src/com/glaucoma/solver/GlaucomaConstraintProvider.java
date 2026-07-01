@@ -11,6 +11,10 @@ import com.glaucoma.domain.Cita;
 public class GlaucomaConstraintProvider implements ConstraintProvider {
   
   private static final java.util.Map<String, Integer> cacheDiasCirugia = new java.util.concurrent.ConcurrentHashMap<>();
+  private static final java.util.Set<String> DOCTORES_SUSTITUIDOS_CAE =
+      java.util.Set.of("R_CAE_2", "R_CAE_4", "R_CAE_6");
+  private static final java.util.Set<String> DOCTORES_TRASLADADOS_CHUC =
+      java.util.Set.of("R_CHUC_32", "R_CHUC_33", "R_CHUC_34");
   
   private int obtenerDiaCirugiaAsignado(String recursoId) {
     return cacheDiasCirugia.computeIfAbsent(recursoId, id -> {
@@ -70,7 +74,7 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
             Joiners.equal(Cita::getRecurso), // Mismo recurso
             Joiners.overlapping(Cita::getT, Cita::getEndMinute) // Solapamiento temporal
         )
-        .penalize(HardSoftScore.ONE_HARD)
+        .penalize(HardSoftScore.ONE_HARD, ((c1, c2) -> 1000))
         .asConstraint("Capacidad de recurso excedida");
   }
   
@@ -80,8 +84,9 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .filter(cita -> cita.getT() != null && cita.esCitaDiagnosticoFinal())
         // Condición de quiebre: Supera el plazo permitido di
         .filter(cita -> {
-          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getPaciente().getTi());
-          int diaRealCita = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getT());
+          int totalDias = cita.getPaciente().getTotalDias();
+          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendario(cita.getPaciente().getTi(), totalDias);
+          int diaRealCita = GeneradorInstancias.obtenerDiaCalendario(cita.getEndMinute(), totalDias);
           
           int diasEsperaReal = diaRealCita - diaRealLlegada;
           int diasPlazoCritico = cita.getPaciente().getDi() / 330;
@@ -89,11 +94,11 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
           return diasEsperaReal > diasPlazoCritico;
         })
         .penalize(HardSoftScore.ONE_SOFT, cita -> {
-          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getPaciente().getTi());
-          int diaRealCita = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getT());
+          int totalDias = cita.getPaciente().getTotalDias();
+          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendario(cita.getPaciente().getTi(), totalDias);
+          int diaRealCita = GeneradorInstancias.obtenerDiaCalendario(cita.getEndMinute(), totalDias);
           int diasEsperaReal = diaRealCita - diaRealLlegada;
           int diasPlazoCritico = cita.getPaciente().getDi() / 330;
-          
           return diasEsperaReal - diasPlazoCritico;
         })
         .asConstraint("Plazo crítico superado (Infactibilidad Médica)");
@@ -105,8 +110,9 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .filter(cita -> cita.getT() != null && cita.esCitaDiagnosticoFinal())
         .filter(cita -> cita.getEndMinute() > cita.getPaciente().getTi())
         .penalize(HardSoftScore.ONE_SOFT, cita -> {
-          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getPaciente().getTi());
-          int diaRealCita = GeneradorInstancias.obtenerDiaCalendarioReal(cita.getEndMinute());
+          int totalDias = cita.getPaciente().getTotalDias();
+          int diaRealLlegada = GeneradorInstancias.obtenerDiaCalendario(cita.getPaciente().getTi(), totalDias);
+          int diaRealCita = GeneradorInstancias.obtenerDiaCalendario(cita.getEndMinute(), totalDias);
           return diaRealCita - diaRealLlegada;
         })
         .asConstraint("Minimizar tiempo total de diagnóstico en días reales");
@@ -129,6 +135,7 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
           boolean esUrgente = c1.getPaciente().getGi() == 4;
           return !esUrgente;
         })
+        .filter((c1, c2) -> !(c1.isPrueba() && c2.isPrueba()))
         .filter((c1, c2) -> (c1.getT() / 330) == (c2.getT() / 330)) // Mismo bloque de día
         .penalize(HardSoftScore.ONE_HARD, (c1, c2) -> 1000)
         .asConstraint("Citas el mismo día para paciente no urgente");
@@ -180,13 +187,13 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
           // Caso B: Si SÍ es día de agenda paralela, aplicamos las sustituciones y traslados
           if (esDiaParalela) {
             // 1. Se sustituye a un médico de cada CAE (dejamos inactivos a los médicos pares de los CAE)
-            if (rId.equals("R_CAE_2") || rId.equals("R_CAE_4") || rId.equals("R_CAE_6")) {
+            if (DOCTORES_SUSTITUIDOS_CAE.contains(rId)) {
               return true;
             }
             
             // 2. Tres médicos específicos del HUC (ej.: los 3 últimos, del 32 al 34) se han trasladado,
             // por lo que dejasen de estar disponibles en el Hospital Central esa jornada
-            return rId.equals("R_CHUC_32") || rId.equals("R_CHUC_33") || rId.equals("R_CHUC_34");
+            return DOCTORES_TRASLADADOS_CHUC.contains(rId);
           }
           return false;
         })
