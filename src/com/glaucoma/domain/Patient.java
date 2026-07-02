@@ -2,6 +2,7 @@ package com.glaucoma.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,8 +15,10 @@ public class Patient {
 
   private boolean comesFromTheER;
   @JsonProperty("isGlaucoma")
+  @JsonAlias({"glaucoma", "isGlaucoma"})
   private boolean isGlaucoma;
   @JsonProperty("isReferredToHospital")
+  @JsonAlias({"referredToHospital", "isReferredToHospital"})
   private boolean isReferredToHospital;
   private boolean needsFollowUp;
   private int assignedCAE;
