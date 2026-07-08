@@ -79,7 +79,7 @@ public class OptimizationRunner {
   private ProblemInstance prepareInstance(StartupData data) {
     if (data.choice().equals("LOAD")) {
       System.out.println("\nCargando población base desde: " + data.JSONFile());
-      ProblemInstance loaded = InstanceLoader.loadFromJSON(data.JSONFile());
+      ProblemInstance loaded = InstanceRepository.loadFromJSON(data.JSONFile());
       if (loaded == null) {
         System.out.println("Error crítico al cargar el archivo JSON. Abortando.");
       }
@@ -90,7 +90,7 @@ public class OptimizationRunner {
     ProblemInstance newInstance = InstanceGenerator.generateInstance(data.patients(), data.days());
 
     OptimizerOptions savedOptions = new OptimizerOptions(false, 0, data.patients(), data.days());
-    InstanceGenerator.saveInstance(newInstance, savedOptions);
+    InstanceRepository.saveInstance(newInstance, savedOptions);
     return newInstance;
   }
 

@@ -4,9 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class InstanceLoader {
-  
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class InstanceRepository {
+  private static final Logger logger = LoggerFactory.getLogger(InstanceRepository.class);
+
   public static ProblemInstance loadFromJSON(String filename) {
     ObjectMapper mapper = new ObjectMapper();
     try {
@@ -16,5 +24,22 @@ public class InstanceLoader {
       return null;
     }
   }
-  
+
+  public static void saveInstance(ProblemInstance instance, OptimizerOptions options) {
+
+    try {
+      Files.createDirectories(Paths.get("instances"));
+
+      String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+      String filename = String.format("instances/P%d_D%d_%s.json",
+          options.patientsQuantity(), options.totalDays(), dateTime);
+
+      new ObjectMapper().writerWithDefaultPrettyPrinter()
+          .writeValue(new File(filename), instance);
+
+    } catch (Exception e) {
+      logger.error("Error al guardar la instancia.", e);
+    }
+  }
 }
