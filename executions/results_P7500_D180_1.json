@@ -1,0 +1,40 @@
+{
+  "metadata" : {
+    "patientsQuantity" : 7500,
+    "scheduleDays" : 180,
+    "operationalMinutes" : 40920
+  },
+  "simulations" : [ {
+    "configuration" : "ESTÁNDAR (Sin Agenda Paralela)",
+    "parallelScheduleDays" : 0,
+    "executionTimeInSeconds" : 21600.034,
+    "unfeasibleCases" : 350,
+    "averageDaysForDiagnosis" : 29.887876025524157,
+    "unassignedAppointmentsTime" : 0,
+    "unassignedAppointmentsCapacity" : 0
+  }, {
+    "configuration" : "PARALELA (2 Días/Mes)",
+    "parallelScheduleDays" : 2,
+    "executionTimeInSeconds" : 21600.009,
+    "unfeasibleCases" : 220,
+    "averageDaysForDiagnosis" : 18.030993618960803,
+    "unassignedAppointmentsTime" : 0,
+    "unassignedAppointmentsCapacity" : 0
+  }, {
+    "configuration" : "PARALELA (3 Días/Mes)",
+    "parallelScheduleDays" : 3,
+    "executionTimeInSeconds" : 21600.007,
+    "unfeasibleCases" : 250,
+    "averageDaysForDiagnosis" : 20.341841385597082,
+    "unassignedAppointmentsTime" : 0,
+    "unassignedAppointmentsCapacity" : 0
+  }, {
+    "configuration" : "PARALELA (4 Días/Mes)",
+    "parallelScheduleDays" : 4,
+    "executionTimeInSeconds" : 21600.003,
+    "unfeasibleCases" : 283,
+    "averageDaysForDiagnosis" : 23.0154968094804,
+    "unassignedAppointmentsTime" : 0,
+    "unassignedAppointmentsCapacity" : 0
+  } ]
+}
