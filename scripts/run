@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup batch_simulation.sh &
+nohup batch_exeecution.sh &
