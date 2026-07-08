@@ -73,8 +73,8 @@ public class InstanceGenerator {
     return map.get(operationalDay);
   }
   
-  public static ProblemInstance generateBasePopulation(int patientsQuantity, int totalDays) {
-    return new ProblemInstance(generateSimulatedPatients(patientsQuantity, totalDays), totalDays);
+  public static ProblemInstance generateInstance(int patientsQuantity, int totalDays) {
+    return new ProblemInstance(generatePatients(patientsQuantity, totalDays), totalDays);
   }
   
   public static GlaucomaSchedule generateProblem(OptimizerOptions options, List<Patient> patients) {
@@ -131,7 +131,7 @@ public class InstanceGenerator {
     return resources;
   }
   
-  public static List<Patient> generateSimulatedPatients(int quantity, int totalDays) {
+  public static List<Patient> generatePatients(int quantity, int totalDays) {
     int totalAvailableMinutes = calculateOperationalMinutes(totalDays);
     List<Patient> patients = new ArrayList<>();
     
@@ -206,13 +206,16 @@ public class InstanceGenerator {
     return patients;
   }
   
+  private static final RouteGenerator routeGenerator = new RouteGenerator();
+
   public static Planning processAllRoutes(List<Patient> patients, List<Station> stations,
                                           List<Resource> resources, boolean useParallelSchedule, int parallelDaysAMonth) {
     List<Appointment> allAppointmentsList = new ArrayList<>();
-    
+
     for (Patient patient : patients) {
-      patient.generateRoute(stations, resources, useParallelSchedule, parallelDaysAMonth, calculateOperationalMinutes(patient.getTotalDays()));
-      allAppointmentsList.addAll(patient.getRoute());
+      List<Appointment> route = routeGenerator.generateRoute(patient, stations, resources, useParallelSchedule, parallelDaysAMonth, calculateOperationalMinutes(patient.getTotalDays()));
+      patient.setRoute(route);
+      allAppointmentsList.addAll(route);
     }
     return new Planning(patients, allAppointmentsList);
   }
