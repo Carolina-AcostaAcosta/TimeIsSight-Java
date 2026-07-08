@@ -1,14 +1,2 @@
 #!/bin/bash
-# Compila y ejecuta pasándole los argumentos que escribas en la consola
-mvn compile exec:java -Dexec.mainClass="Main" -Dexec.args="$*"
-
-
-STATUS=$?
-
-NAME=$(hostname)
-
-if [ $STATUS -eq 0 ]; then
-    curl -d "✅ Ejecución de la máquina $NAME de $1 finalizada con éxito." ntfy.sh/TimeIsSight-TFG-Carolina-ULL
-else
-    curl -d "❌ Error en la ejecución de la máquina $NAME de $1." ntfy.sh/TimeIsSight-TFG-Carolina-ULL
-fi
+nohup batch_simulation.sh &
