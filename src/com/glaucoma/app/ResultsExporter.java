@@ -13,9 +13,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ResultsExporter {
-  public record GeneralReport(Metadata metadata, java.util.List<SimulationResult> simulations) {}
+  public record GeneralReport(Metadata metadata, java.util.List<ConfigurationResult> simulations) {}
   public record Metadata(int patientsQuantity, int scheduleDays, int operationalMinutes) {}
-  public record SimulationResult(
+  public record ConfigurationResult(
       String configuration,
       int parallelScheduleDays,
       double executionTimeInSeconds,
@@ -42,7 +42,7 @@ public class ResultsExporter {
     }
   }
   
-  public static void save(List<SimulationResult> JSONResults, OptimizerOptions options) {
+  public static void save(List<ConfigurationResult> JSONResults, OptimizerOptions options) {
     try {
       Metadata meta = new Metadata(options.patientsQuantity(), options.totalDays(), InstanceGenerator.calculateOperationalMinutes(options.totalDays()));
       GeneralReport report = new GeneralReport(meta, JSONResults);
