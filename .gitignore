@@ -3,6 +3,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
+.idea
 
 ### Eclipse ###
 .apt_generated
@@ -37,3 +38,4 @@ bin/
 
 ### Target - Compilation files ###
 /target
+dependency-reduced-pom.xml
