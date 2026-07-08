@@ -36,7 +36,7 @@ public class Main {
     CLIConfiguration config = new CLIConfiguration(args);
     
     if (config.isShowHelp()) {
-      printHelp();
+      CLIConfiguration.showHelp();
       return;
     }
     
@@ -50,7 +50,7 @@ public class Main {
     
     // FASE 3: Ejecutar la batería de pruebas
     Solver<GlaucomaSchedule> solver = configureSolver(config.getExecutionTimeMinutes());
-    List<ResultsExporter.SimulationResult> results = executeOptimizerBattery(instance, solver);
+    List<ResultsExporter.ConfigurationResult> results = executeOptimizerBattery(instance, solver);
     ResultsExporter.save(results, new OptimizerOptions(false, 0, instance.patients().size(), instance.totalDays()));
   }
   
@@ -83,7 +83,7 @@ public class Main {
   private static ProblemInstance prepareInstance(StartupData data) {
     if (data.choice().equals("LOAD")) {
       System.out.println("\nCargando población base desde: " + data.JSONFile());
-      ProblemInstance loaded = InstancesLoader.loadFromJSON(data.JSONFile());
+      ProblemInstance loaded = InstanceLoader.loadFromJSON(data.JSONFile());
       if (loaded == null) {
         System.out.println("Error crítico al cargar el archivo JSON. Abortando.");
       }
@@ -91,14 +91,14 @@ public class Main {
     }
     
     System.out.println("\nGenerando nueva población aleatoria...");
-    ProblemInstance newInstance = InstanceGenerator.generateBasePopulation(data.patients(), data.days());
+    ProblemInstance newInstance = InstanceGenerator.generateInstance(data.patients(), data.days());
     
     OptimizerOptions savedOptions = new OptimizerOptions(false, 0, data.patients(), data.days());
     InstanceGenerator.saveInstance(newInstance, savedOptions);
     return newInstance;
   }
   
-  private static List<ResultsExporter.SimulationResult> executeOptimizerBattery(ProblemInstance instance, Solver<GlaucomaSchedule> solver) {
+  private static List<ResultsExporter.ConfigurationResult> executeOptimizerBattery(ProblemInstance instance, Solver<GlaucomaSchedule> solver) {
     List<Setting> settingBattery = List.of(
         new Setting("ESTÁNDAR (Sin Agenda Paralela)", false, 0),
         new Setting("PARALELA (2 Días/Mes)", true, 2),
@@ -112,7 +112,7 @@ public class Main {
     System.out.println("\n--- INICIANDO BATERÍA DE " + settingBattery.size() + " ASIGNACIONES ---");
     
     int simNumber = 1;
-    List<ResultsExporter.SimulationResult> results = new ArrayList<>();
+    List<ResultsExporter.ConfigurationResult> results = new ArrayList<>();
     for (Setting setting : settingBattery) {
       System.out.println("\n=======================================================");
       System.out.println("[Prueba " + simNumber + "/4] Ejecutando: " + setting.name());
@@ -138,8 +138,8 @@ public class Main {
     return results;
   }
   
-  private static ResultsExporter.SimulationResult processResults(GlaucomaSchedule optimizedSchedule, OptimizerOptions options,
-                                                                 int simulationNumber, long executionTimeMs, Setting setting) {
+  private static ResultsExporter.ConfigurationResult processResults(GlaucomaSchedule optimizedSchedule, OptimizerOptions options,
+                                                                    int simulationNumber, long executionTimeMs, Setting setting) {
     int unfeasibleCases = 0;
     long waitingDaysSum = 0;
     int totalGlaucomaDiagnosis = 0;
@@ -191,7 +191,7 @@ public class Main {
     System.out.println("-> Infactibilidades médicas: " + unfeasibleCases);
     System.out.println("[Simulación " + simulationNumber + "] Completada con éxito.");
     
-    return new ResultsExporter.SimulationResult(
+    return new ResultsExporter.ConfigurationResult(
         setting.name(),
         setting.parallelDaysAMonth(),
         executionTimeMs / 1000.0,
@@ -219,20 +219,6 @@ public class Main {
     } catch (Exception e) {
       System.err.println("No se pudo configurar la redirección de logs: " + e.getMessage());
     }
-  }
-  
-  private static void printHelp() {
-    System.out.println("\nUso del simulador:");
-    System.out.println("  java -jar SimuladorGlaucoma.jar [-h | --help] [-n <patients> <días>] [-e <archivo>] [-t <tiempo (min)>]");
-    System.out.println("\nOpciones:");
-    System.out.println("  Sin argumentos\tAbre el menú interactivo paso a paso.");
-    System.out.println("  -h, --help    \tMuestra este mensaje de ayuda.");
-    System.out.println("  -n <pac> <días>\tGenera una NUEVA instancia con la cantidad de patients y días especificados.");
-    System.out.println("                \tEjemplo: -n 500 365");
-    System.out.println("  -e <archivo>  \tCarga una instancia EXISTENTE desde la carpeta 'instancias'.");
-    System.out.println("                \tEjemplo: -e P500_D365_20260629_215242.json");
-    System.out.println("  -t <tiempo (min)>\tAsigna un tiempo máximo de ejecución para el solver dentro de cada simulación en minutos.");
-    System.out.println("                \tEjemplo: -t 120\n");
   }
   
   // Configuración limpia del motor metaheurístico

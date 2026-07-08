@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 
-public class InstancesLoader {
+public class InstanceLoader {
   
   public static ProblemInstance loadFromJSON(String filename) {
     ObjectMapper mapper = new ObjectMapper();

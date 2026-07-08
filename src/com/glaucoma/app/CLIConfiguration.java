@@ -65,4 +65,18 @@ public class CLIConfiguration {
   public boolean isLoadInstance() { return loadInstance; }
   public String getLoadFile() { return loadFile; }
   public long getExecutionTimeMinutes() { return executionTimeMinutes; }
+  
+  public static void showHelp() {
+    System.out.println("\nUso del simulador:");
+    System.out.println("  java -jar target/TimeIsSight-1.0-SNAPSHOT.jar [-h | --help] [-n <pacientes> <días>] [-e <archivo>] [-t <tiempo (min)>]");
+    System.out.println("\nOpciones:");
+    System.out.println("  Sin argumentos\tAbre el menú interactivo paso a paso.");
+    System.out.println("  -h, --help    \tMuestra este mensaje de ayuda.");
+    System.out.println("  -n <pac> <días>\tGenera una NUEVA instancia con la cantidad de pacientes y días especificados.");
+    System.out.println("                \tEjemplo: -n 500 365");
+    System.out.println("  -e <archivo>  \tCarga una instancia EXISTENTE desde la carpeta 'instances'.");
+    System.out.println("                \tEjemplo: -e P500_D365_20260530_215242.json");
+    System.out.println("  -t <tiempo (min)>\tAsigna un tiempo máximo de ejecución para el solver dentro de cada escenario en minutos.");
+    System.out.println("                \tEjemplo: -t 120\n");
+  }
 }
