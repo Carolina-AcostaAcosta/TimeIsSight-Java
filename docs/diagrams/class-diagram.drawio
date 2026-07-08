@@ -1,0 +1,149 @@
+<mxfile host="app.diagrams.net" modified="2026-07-08T00:00:00.000Z" agent="claude-code" version="24.0.0" type="device">
+  <diagram id="timeissight-class-diagram" name="Diagrama de clases">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Package labels -->
+        <mxCell id="lblRoot" value="(paquete por defecto)" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lblApp1" value="com.glaucoma.app &#8212; arranque" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="300" y="10" width="260" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lblApp2" value="com.glaucoma.app &#8212; instancias" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="10" width="280" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lblApp3" value="com.glaucoma.app &#8212; resultados" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="10" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lblDomain" value="com.glaucoma.domain" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="10" width="260" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lblSolver" value="com.glaucoma.solver" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=14;fontColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="10" width="260" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Column A: default package -->
+        <mxCell id="main" value="&lt;b&gt;Main&lt;/b&gt;&lt;hr&gt;+ main(args: String[]): void {static}" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Column B: app - arranque -->
+        <mxCell id="cliConfig" value="&lt;b&gt;CLIConfiguration&lt;/b&gt;&lt;hr&gt;- showHelp, useInteractiveMenu, newInstance, loadInstance: boolean&lt;br&gt;- patients, days: int&lt;br&gt;- executionTimeMinutes: long&lt;br&gt;- loadFile: String&lt;hr&gt;+ CLIConfiguration(args: String[])&lt;br&gt;+ getters (is/get...)&lt;br&gt;+ showHelp(): void {static}" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="300" y="40" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="interactiveMenu" value="&lt;b&gt;InteractiveMenu&lt;/b&gt;&lt;hr&gt;- scanner: Scanner&lt;hr&gt;+ InteractiveMenu()&lt;br&gt;+ configureData(): Object[]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="300" y="270" width="260" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="optRunner" value="&lt;b&gt;OptimizationRunner&lt;/b&gt;&lt;hr&gt;- solverConfigFactory: SolverConfigFactory&lt;br&gt;- resultsAnalyzer: ResultsAnalyzer&lt;hr&gt;+ run(args: String[]): void&lt;br&gt;- determineStartupData(config): StartupData&lt;br&gt;- prepareInstance(data): ProblemInstance&lt;br&gt;- executeOptimizerBattery(instance, solver): ConfigurationResult[]&lt;br&gt;- configureConsoleTraceability(): void&lt;br&gt;&lt;i&gt;records internos: Setting, StartupData&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="300" y="440" width="320" height="230" as="geometry" />
+        </mxCell>
+
+        <!-- Column C: app - instancias -->
+        <mxCell id="instanceGen" value="&lt;b&gt;InstanceGenerator&lt;/b&gt;&lt;hr&gt;- routeGenerator: RouteGenerator {static}&lt;br&gt;- patientGenerator: PatientGenerator {static}&lt;br&gt;- clinicResourceFactory: ClinicResourceFactory {static}&lt;hr&gt;+ generateInstance(qty, days): ProblemInstance {static}&lt;br&gt;+ generateProblem(options, patients): GlaucomaSchedule {static}&lt;br&gt;+ processAllRoutes(...): Planning {static}&lt;br&gt;&lt;i&gt;record interno: Planning(patients, appointments)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="40" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="patientGen" value="&lt;b&gt;PatientGenerator&lt;/b&gt;&lt;hr&gt;- rand: Random&lt;hr&gt;+ generatePatients(quantity, totalDays): Patient[]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="280" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="clinicFactory" value="&lt;b&gt;ClinicResourceFactory&lt;/b&gt;&lt;hr&gt;+ createStations(parallel: boolean): Station[]&lt;br&gt;+ createResources(parallel: boolean): Resource[]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="440" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="instanceRepo" value="&lt;b&gt;InstanceRepository&lt;/b&gt;&lt;hr&gt;- logger: Logger {static}&lt;hr&gt;+ loadFromJSON(filename): ProblemInstance {static}&lt;br&gt;+ saveInstance(instance, options): void {static}" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="590" width="300" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="problemInstance" value="&lt;i&gt;&#171;record&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;ProblemInstance&lt;/b&gt;&lt;hr&gt;patients: Patient[]&lt;br&gt;totalDays: int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="770" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="optimizerOptions" value="&lt;i&gt;&#171;record&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;OptimizerOptions&lt;/b&gt;&lt;hr&gt;useParallelSchedule: boolean&lt;br&gt;parallelDaysAMonth: int&lt;br&gt;patientsQuantity: int&lt;br&gt;totalDays: int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="930" width="260" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Column D: app - resultados -->
+        <mxCell id="resultsAnalyzer" value="&lt;b&gt;ResultsAnalyzer&lt;/b&gt;&lt;hr&gt;+ analyze(schedule, options, simNumber, execTimeMs, settingName, parallelDaysAMonth): ConfigurationResult" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="40" width="340" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="resultsExporter" value="&lt;b&gt;ResultsExporter&lt;/b&gt;&lt;hr&gt;+ generateResultsPath(patients, days): String {static}&lt;br&gt;+ save(results, options): void {static}&lt;br&gt;&lt;i&gt;records internos: GeneralReport, Metadata, ConfigurationResult&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="190" width="340" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="solverFactory" value="&lt;b&gt;SolverConfigFactory&lt;/b&gt;&lt;hr&gt;+ configureSolver(maxTime: long): Solver" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="370" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Column E: domain -->
+        <mxCell id="routeGen" value="&lt;b&gt;RouteGenerator&lt;/b&gt;&lt;hr&gt;+ generateRoute(patient, stations, resources, parallel, parallelDaysAMonth, simulationEnd): Appointment[]&lt;br&gt;- newAppointment(...): Appointment" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="40" width="360" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="workingCal" value="&lt;b&gt;WorkingCalendar&lt;/b&gt;&lt;hr&gt;- cacheDaysMapping: Map(Integer &#8594; int[]) {static}&lt;hr&gt;+ generateDaysMapping(totalDays): int[] {static}&lt;br&gt;- calculateDaysMapping(totalDays): int[] {static}&lt;br&gt;+ calculateOperationalMinutes(totalDays): int {static}&lt;br&gt;+ getCalendarDay(operationalMinute, totalDays): int {static}" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="200" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="patient" value="&lt;b&gt;Patient&lt;/b&gt;&lt;hr&gt;- id: String&lt;br&gt;- ti, gi, di: int&lt;br&gt;- comesFromTheER, isGlaucoma, isReferredToHospital, needsFollowUp: boolean&lt;br&gt;- assignedCAE, totalDays: int&lt;br&gt;- route: Appointment[]&lt;hr&gt;+ Patient(id, ti, gi, di, comesFromTheER, isGlaucoma, isReferredToHospital, needsFollowUp, assignedCAE, totalDays)&lt;br&gt;+ getters&lt;br&gt;+ setRoute(route: Appointment[]): void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="410" width="340" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment" value="&lt;i&gt;&#171;PlanningEntity&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;Appointment&lt;/b&gt;&lt;hr&gt;- id: String&lt;br&gt;- patient: Patient&lt;br&gt;- station: Station&lt;br&gt;- resource: Resource&lt;br&gt;- pij: int&lt;br&gt;- isFinalDiagnosis: boolean&lt;br&gt;- simulationEndMinute, parallelDaysAMonth: int&lt;br&gt;- centerCache: String&lt;br&gt;- testCache: boolean&lt;br&gt;- t: Integer &lt;i&gt;&#171;PlanningVariable&#187;&lt;/i&gt;&lt;hr&gt;+ Appointment(id, patient, station, resource, pij, isFinalDiagnosis, simulationEndMinute, parallelDaysAMonth)&lt;br&gt;+ get5minRange(): ValueRange&lt;br&gt;+ getEndMinute(): Integer&lt;br&gt;+ isFinalDiagnosisAppointment(): boolean&lt;br&gt;+ isTest(): boolean&lt;br&gt;+ getCenter(): String&lt;br&gt;+ isParallelDay(): boolean&lt;br&gt;+ getters/setters" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="660" width="360" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="schedule" value="&lt;i&gt;&#171;PlanningSolution&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;GlaucomaSchedule&lt;/b&gt;&lt;hr&gt;- patientsList: Patient[]&lt;br&gt;- resourcesList: Resource[]&lt;br&gt;- stationsList: Station[]&lt;br&gt;- appointmentsList: Appointment[] &lt;i&gt;&#171;PlanningEntityCollectionProperty&#187;&lt;/i&gt;&lt;br&gt;- score: HardSoftScore &lt;i&gt;&#171;PlanningScore&#187;&lt;/i&gt;&lt;hr&gt;+ GlaucomaSchedule()&lt;br&gt;+ GlaucomaSchedule(patientsList, resourcesList, stationsList, appointmentsList)&lt;br&gt;+ getters/setters" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="1080" width="340" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="resource" value="&lt;i&gt;&#171;record&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;Resource&lt;/b&gt;&lt;hr&gt;id: String&lt;br&gt;name: String&lt;br&gt;serviceTime: int" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="1360" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="station" value="&lt;i&gt;&#171;record&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;Station&lt;/b&gt;&lt;hr&gt;id: String&lt;br&gt;name: String&lt;hr&gt;+ isTest(): boolean&lt;br&gt;+ isConsultation(): boolean" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="1540" width="240" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Column F: solver -->
+        <mxCell id="constraintProvider" value="&lt;i&gt;&#171;ConstraintProvider&#187;&lt;/i&gt;&lt;br&gt;&lt;b&gt;GlaucomaConstraintProvider&lt;/b&gt;&lt;hr&gt;- cacheSurgeryDays: Map(String &#8594; int) {static}&lt;br&gt;- DOCTORS_REPLACED_CAE, DOCTORS_TRANSFERRED_CHUC: Set(String) {static final}&lt;hr&gt;+ defineConstraints(factory): Constraint[]&lt;br&gt;- getAssignedSurgeryDay(resourceID): int&lt;br&gt;- 10 m&#233;todos privados de restricci&#243;n (Constraint): sameCenterSameDayTests, testsConsultationsPrecedence, resourcesCapacity, diagnosisCriticalPeriod, minimizeDiagnosisTime, attendOnlyAfterArrival, sameDayAppointmentsNoSevere, severeTransportMargin, HUCDoctorsWeeklySurgeries, ParallelScheduleAvailabilityLogic" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;fontSize=11;fontFamily=Helvetica;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="40" width="400" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Dependencies -->
+        <mxCell id="e1" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="main" target="optRunner"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="cliConfig"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="interactiveMenu"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="instanceGen"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="instanceRepo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="solverFactory"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="resultsAnalyzer"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="resultsExporter"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="problemInstance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="optRunner" target="optimizerOptions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="patientGen"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="clinicFactory"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="routeGen"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="workingCal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="problemInstance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceGen" target="schedule"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="patientGen" target="patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="patientGen" target="workingCal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="clinicFactory" target="station"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="clinicFactory" target="resource"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="routeGen" target="appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="routeGen" target="patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="resultsAnalyzer" target="workingCal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="resultsAnalyzer" target="schedule"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e25" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="resultsExporter" target="workingCal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e26" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="solverFactory" target="constraintProvider"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="solverFactory" target="schedule"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e28" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="constraintProvider" target="workingCal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e29" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="constraintProvider" target="appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e30" style="endArrow=open;endFill=0;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="instanceRepo" target="problemInstance"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Composition / aggregation / association -->
+        <mxCell id="e31" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="problemInstance" target="patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e32" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="schedule" target="patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e33" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="schedule" target="resource"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="schedule" target="station"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e35" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="schedule" target="appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e36" style="endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="appointment" target="patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e37" style="endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="appointment" target="station"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e38" style="endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="appointment" target="resource"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e39" style="startArrow=diamondThin;startFill=0;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="patient" target="appointment"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
