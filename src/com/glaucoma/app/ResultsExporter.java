@@ -2,6 +2,7 @@ package com.glaucoma.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.glaucoma.domain.WorkingCalendar;
 import java.io.File;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class ResultsExporter {
   
   public static void save(List<ConfigurationResult> JSONResults, OptimizerOptions options) {
     try {
-      Metadata meta = new Metadata(options.patientsQuantity(), options.totalDays(), InstanceGenerator.calculateOperationalMinutes(options.totalDays()));
+      Metadata meta = new Metadata(options.patientsQuantity(), options.totalDays(), WorkingCalendar.calculateOperationalMinutes(options.totalDays()));
       GeneralReport report = new GeneralReport(meta, JSONResults);
       
       ObjectMapper mapper = new ObjectMapper();

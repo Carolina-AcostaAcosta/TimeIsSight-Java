@@ -2,6 +2,7 @@ package com.glaucoma.app;
 
 import com.glaucoma.domain.Appointment;
 import com.glaucoma.domain.GlaucomaSchedule;
+import com.glaucoma.domain.WorkingCalendar;
 
 public class ResultsAnalyzer {
 
@@ -22,8 +23,8 @@ public class ResultsAnalyzer {
         totalGlaucomaDiagnosis++;
 
         // Traducimos los minutos de simulación a días reales del calendario (0-364)
-        int beginningCalendarDay = InstanceGenerator.getCalendarDay(appointment.getPatient().getTi(), options.totalDays());
-        int endCalendarDay = InstanceGenerator.getCalendarDay(appointment.getEndMinute(), options.totalDays());
+        int beginningCalendarDay = WorkingCalendar.getCalendarDay(appointment.getPatient().getTi(), options.totalDays());
+        int endCalendarDay = WorkingCalendar.getCalendarDay(appointment.getEndMinute(), options.totalDays());
 
         int realWaitingDays = endCalendarDay - beginningCalendarDay;
         waitingDaysSum += realWaitingDays;

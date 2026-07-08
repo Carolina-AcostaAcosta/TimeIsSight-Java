@@ -5,8 +5,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import com.glaucoma.app.InstanceGenerator;
 import com.glaucoma.domain.Appointment;
+import com.glaucoma.domain.WorkingCalendar;
 
 public class GlaucomaConstraintProvider implements ConstraintProvider {
   
@@ -85,8 +85,8 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         // Condición de quiebre: Supera el plazo permitido di
         .filter(appointment -> {
           int totalDays = appointment.getPatient().getTotalDays();
-          int arrivalRealDay = InstanceGenerator.getCalendarDay(appointment.getPatient().getTi(), totalDays);
-          int appointmentRealDay = InstanceGenerator.getCalendarDay(appointment.getEndMinute(), totalDays);
+          int arrivalRealDay = WorkingCalendar.getCalendarDay(appointment.getPatient().getTi(), totalDays);
+          int appointmentRealDay = WorkingCalendar.getCalendarDay(appointment.getEndMinute(), totalDays);
           
           int realWaitingDays = appointmentRealDay - arrivalRealDay;
           int criticalPeriodDays = appointment.getPatient().getDi() / 330;
@@ -95,8 +95,8 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         })
         .penalize(HardSoftScore.ONE_SOFT, appointment -> {
           int totalDays = appointment.getPatient().getTotalDays();
-          int arrivalRealDay = InstanceGenerator.getCalendarDay(appointment.getPatient().getTi(), totalDays);
-          int appointmentRealDay = InstanceGenerator.getCalendarDay(appointment.getEndMinute(), totalDays);
+          int arrivalRealDay = WorkingCalendar.getCalendarDay(appointment.getPatient().getTi(), totalDays);
+          int appointmentRealDay = WorkingCalendar.getCalendarDay(appointment.getEndMinute(), totalDays);
           int realWaitingDays = appointmentRealDay - arrivalRealDay;
           int criticalPeriodDays = appointment.getPatient().getDi() / 330;
           return realWaitingDays - criticalPeriodDays;
@@ -111,8 +111,8 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .filter(appointment -> appointment.getEndMinute() > appointment.getPatient().getTi())
         .penalize(HardSoftScore.ONE_SOFT, appointment -> {
           int totalDays = appointment.getPatient().getTotalDays();
-          int realArrivingDay = InstanceGenerator.getCalendarDay(appointment.getPatient().getTi(), totalDays);
-          int realAppointmentDay = InstanceGenerator.getCalendarDay(appointment.getEndMinute(), totalDays);
+          int realArrivingDay = WorkingCalendar.getCalendarDay(appointment.getPatient().getTi(), totalDays);
+          int realAppointmentDay = WorkingCalendar.getCalendarDay(appointment.getEndMinute(), totalDays);
           return realAppointmentDay - realArrivingDay;
         })
         .asConstraint("Minimizar tiempo total de diagnóstico en días reales");
