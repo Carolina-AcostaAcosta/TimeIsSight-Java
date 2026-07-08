@@ -6,8 +6,18 @@ import com.glaucoma.domain.Station;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Construye el catálogo fijo de estaciones y recursos físicos del hospital
+ * (doctores, máquinas de pruebas, etc.) usado para generar cada escenario de optimización.
+ */
 public class ClinicResourceFactory {
 
+  /**
+   * Crea las estaciones del circuito clínico.
+   *
+   * @param parallel {@code true} si el escenario incluye la estación de agenda paralela de Glaucoma
+   * @return la lista de estaciones del escenario
+   */
   public List<Station> createStations(boolean parallel) {
     List<Station> stations = new ArrayList<>();
     stations.add(new Station("E1", "Triaje de Urgencias"));
@@ -18,6 +28,12 @@ public class ClinicResourceFactory {
     return stations;
   }
 
+  /**
+   * Crea los recursos físicos (doctores y máquinas) disponibles en el escenario.
+   *
+   * @param parallel {@code true} si el escenario incluye los doctores monográficos de agenda paralela
+   * @return la lista de recursos del escenario
+   */
   public List<Resource> createResources(boolean parallel) {
     List<Resource> resources = new ArrayList<>();
     resources.add(new Resource("R_Triaje", "TriajeUrgencias", 20));

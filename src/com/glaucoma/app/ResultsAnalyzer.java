@@ -4,8 +4,24 @@ import com.glaucoma.domain.Appointment;
 import com.glaucoma.domain.GlaucomaSchedule;
 import com.glaucoma.domain.WorkingCalendar;
 
+/**
+ * Calcula las métricas de calidad de una agenda ya optimizada
+ * (infactibilidades médicas, tiempo medio de diagnóstico, citas sin asignar...)
+ * y las traduce a un {@link ResultsExporter.ConfigurationResult}.
+ */
 public class ResultsAnalyzer {
 
+  /**
+   * Analiza una agenda optimizada e imprime un resumen por consola.
+   *
+   * @param optimizedSchedule agenda resuelta por el solver
+   * @param options           opciones del escenario ejecutado
+   * @param simulationNumber  número de la prueba dentro de la batería, usado solo para el log
+   * @param executionTimeMs   tiempo de ejecución del solver, en milisegundos
+   * @param settingName       nombre descriptivo del escenario ejecutado
+   * @param parallelDaysAMonth días al mes con agenda paralela del escenario ejecutado
+   * @return el resultado de la configuración, listo para exportar
+   */
   public ResultsExporter.ConfigurationResult analyze(GlaucomaSchedule optimizedSchedule, OptimizerOptions options,
                                                       int simulationNumber, long executionTimeMs, String settingName, int parallelDaysAMonth) {
     int unfeasibleCases = 0;

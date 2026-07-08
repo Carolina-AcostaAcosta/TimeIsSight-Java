@@ -8,14 +8,19 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import com.glaucoma.domain.Appointment;
 import com.glaucoma.domain.WorkingCalendar;
 
+/**
+ * Define las restricciones duras y blandas que usa Timefold para evaluar la calidad
+ * de una agenda ({@link com.glaucoma.domain.GlaucomaSchedule}) durante la optimización.
+ */
 public class GlaucomaConstraintProvider implements ConstraintProvider {
-  
+
   private static final java.util.Map<String, Integer> cacheSurgeryDays = new java.util.concurrent.ConcurrentHashMap<>();
   private static final java.util.Set<String> DOCTORS_REPLACED_CAE =
       java.util.Set.of("R_CAE_2", "R_CAE_4", "R_CAE_6");
   private static final java.util.Set<String> DOCTORS_TRANSFERRED_CHUC =
       java.util.Set.of("R_CHUC_32", "R_CHUC_33", "R_CHUC_34");
-  
+
+  // Calcula (y cachea) el día de la semana en el que un doctor del CHUC tiene quirófano asignado
   private int getAssignedSurgeryDay(String resourceID) {
     return cacheSurgeryDays.computeIfAbsent(resourceID, id -> {
       if (id.startsWith("R_CHUC_")) {
@@ -26,6 +31,12 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
     });
   }
   
+  /**
+   * Declara el conjunto completo de restricciones evaluadas por el solver.
+   *
+   * @param factory fábrica de restricciones de Timefold
+   * @return las restricciones duras y blandas del problema
+   */
   @Override
   public Constraint[] defineConstraints(ConstraintFactory factory) {
     return new Constraint[]{
@@ -52,8 +63,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Pruebas del mismo centro deben ser en el mismo día");
   }
   
-  // 1. RESTRICCIÓN: Las pruebas diagnósticas deben ocurrir antes que la consulta
-  // Matemática: Tpruebasi + pi, pruebas <= Tconsultai
   private Constraint testsConsultationsPrecedence(ConstraintFactory factory) {
     return factory.forEach(Appointment.class)
         .filter(testAppointment -> testAppointment.getT() != null && testAppointment.isTest())
@@ -67,8 +76,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Pruebas deben hacerse un día distinto y anterior a la consulta");
   }
   
-  // 2. RESTRICCIÓN: Capacidad de Recursos (No solapamiento en el mismo minuto t)
-  // Matemática: sum(sum(pij * xijt)) <= crt
   private Constraint resourcesCapacity(ConstraintFactory factory) {
     return factory.forEachUniquePair(Appointment.class,
             Joiners.equal(Appointment::getResource), // Mismo recurso
@@ -78,7 +85,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Capacidad de recurso excedida");
   }
   
-  // 3. RESTRICCIÓN (INFACTIBILIDAD): Penalización por superar el plazo crítico máximo
   private Constraint diagnosisCriticalPeriod(ConstraintFactory factory) {
     return factory.forEach(Appointment.class)
         .filter(appointment -> appointment.getT() != null && appointment.isFinalDiagnosisAppointment())
@@ -104,7 +110,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Plazo crítico superado (Infactibilidad Médica)");
   }
   
-  // 4. FUNCIÓN OBJETIVO: Minimizar el tiempo total de diagnóstico
   private Constraint minimizeDiagnosisTime(ConstraintFactory factory) {
     return factory.forEach(Appointment.class)
         .filter(appointment -> appointment.getT() != null && appointment.isFinalDiagnosisAppointment())
@@ -118,7 +123,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Minimizar tiempo total de diagnóstico en días reales");
   }
   
-  // 5. RESTRICCIÓN ADICIONAL: Un paciente no puede ser atendido antes de llegar al hospital
   private Constraint attendOnlyAfterArrival(ConstraintFactory factory) {
     return factory.forEach(Appointment.class)
         .filter(appointment -> appointment.getT() != null)
@@ -127,7 +131,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Atención prematura antes de la llegada");
   }
   
-  // RESTRICCIÓN: Pacientes estables NO pueden tener dos appointments el mismo día operativo
   private Constraint sameDayAppointmentsNoSevere(ConstraintFactory factory) {
     return factory.forEachUniquePair(Appointment.class, Joiners.equal(Appointment::getPatient))
         .filter((c1, c2) -> c1.getT() != null && c2.getT() != null)
@@ -141,7 +144,6 @@ public class GlaucomaConstraintProvider implements ConstraintProvider {
         .asConstraint("Citas el mismo día para paciente no urgente");
   }
   
-  // RESTRICCIÓN: Pacientes urgentes pueden coincidir el mismo día pero con margen de transporte (30 min)
   private Constraint severeTransportMargin(ConstraintFactory factory) {
     return factory.forEachUniquePair(Appointment.class, Joiners.equal(Appointment::getPatient))
         .filter((c1, c2) -> c1.getT() != null && c2.getT() != null)

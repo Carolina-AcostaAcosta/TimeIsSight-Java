@@ -12,9 +12,19 @@ import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Persiste y recupera instancias del problema ({@link ProblemInstance}) en formato JSON,
+ * dentro de la carpeta {@code instances}.
+ */
 public class InstanceRepository {
   private static final Logger logger = LoggerFactory.getLogger(InstanceRepository.class);
 
+  /**
+   * Carga una instancia previamente guardada.
+   *
+   * @param filename nombre del fichero JSON dentro de la carpeta {@code instances}
+   * @return la instancia cargada, o {@code null} si ocurrió un error de lectura
+   */
   public static ProblemInstance loadFromJSON(String filename) {
     ObjectMapper mapper = new ObjectMapper();
     try {
@@ -25,6 +35,12 @@ public class InstanceRepository {
     }
   }
 
+  /**
+   * Guarda una instancia en un fichero JSON con nombre único basado en fecha y hora.
+   *
+   * @param instance instancia del problema a guardar
+   * @param options  opciones usadas para nombrar el fichero (cantidad de pacientes y días)
+   */
   public static void saveInstance(ProblemInstance instance, OptimizerOptions options) {
 
     try {

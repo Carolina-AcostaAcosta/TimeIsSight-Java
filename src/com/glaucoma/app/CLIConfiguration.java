@@ -1,49 +1,57 @@
 package com.glaucoma.app;
 
+/**
+ * Analiza y almacena las opciones recibidas por línea de comandos al arrancar el programa.
+ * Si no se reciben argumentos, activa el menú interactivo por defecto.
+ */
 public class CLIConfiguration {
   private boolean showHelp = false;
   private boolean useInteractiveMenu = false;
-  
+
   private boolean newInstance = false;
   private int patients = 0;
   private int days = 0;
   private long executionTimeMinutes = 60L;
-  
+
   private boolean loadInstance = false;
   private String loadFile = null;
-  
+
+  /**
+   * Analiza los argumentos recibidos y configura el estado de la instancia.
+   * Ante cualquier argumento desconocido o parámetro faltante, activa la ayuda.
+   *
+   * @param args argumentos de línea de comandos
+   */
   public CLIConfiguration(String[] args) {
     // Si no hay argumentos, el comportamiento por defecto es el menú
     if (args == null || args.length == 0) {
       useInteractiveMenu = true;
       return;
     }
-    
+
     try {
       for (int i = 0; i < args.length; i++) {
         switch (args[i]) {
           case "-h":
           case "--help":
             showHelp = true;
-            return; // Si pide ayuda, no procesamos más
-          
+            return;
+
           case "-n":
             newInstance = true;
-            // Leemos los dos parámetros siguientes
             patients = Integer.parseInt(args[++i]);
             days = Integer.parseInt(args[++i]);
             break;
-            
+
           case "-e":
             loadInstance = true;
-            // Leemos el name del archivo
             loadFile = args[++i];
             break;
-            
+
           case "-t":
             executionTimeMinutes = Long.parseLong(args[++i]);
             break;
-            
+
           default:
             System.err.println("Argumento desconocido: " + args[i]);
             showHelp = true;
@@ -55,7 +63,7 @@ public class CLIConfiguration {
       showHelp = true;
     }
   }
-  
+
   // --- GETTERS ---
   public boolean isShowHelp() { return showHelp; }
   public boolean isUseInteractiveMenu() { return useInteractiveMenu; }
@@ -65,7 +73,10 @@ public class CLIConfiguration {
   public boolean isLoadInstance() { return loadInstance; }
   public String getLoadFile() { return loadFile; }
   public long getExecutionTimeMinutes() { return executionTimeMinutes; }
-  
+
+  /**
+   * Imprime por consola las instrucciones de uso del programa.
+   */
   public static void showHelp() {
     System.out.println("\nUso del simulador:");
     System.out.println("  java -jar target/TimeIsSight-1.0-SNAPSHOT.jar [-h | --help] [-n <pacientes> <días>] [-e <archivo>] [-t <tiempo (min)>]");

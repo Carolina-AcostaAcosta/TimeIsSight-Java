@@ -7,9 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Genera pacientes aleatorios siguiendo la estratificación clínica del estudio
+ * (probabilidad de glaucoma, derivación a CHUC, necesidad de seguimiento, etc.).
+ */
 public class PatientGenerator {
   private final Random rand = new Random();
 
+  /**
+   * Genera una lista de pacientes aleatorios para un horizonte de planificación dado.
+   *
+   * @param quantity  cantidad de pacientes a generar
+   * @param totalDays duración del horizonte de planificación, en días
+   * @return la lista de pacientes generados
+   */
   public List<Patient> generatePatients(int quantity, int totalDays) {
     int totalAvailableMinutes = WorkingCalendar.calculateOperationalMinutes(totalDays);
     List<Patient> patients = new ArrayList<>();
@@ -64,8 +75,7 @@ public class PatientGenerator {
         }
       }
 
-      // 2. ¿Necesita seguimiento (revisiones)?
-      // Según tu lógica: 90% si va al CHUC, 30% si se queda en el CAE
+      // ¿Necesita seguimiento?
       boolean needsFollowUp;
       if (isReferredToHospital) {
         needsFollowUp = rand.nextDouble() < 0.90;
@@ -77,8 +87,7 @@ public class PatientGenerator {
 
       // El CAE que se le asigna de los tres disponibles
       int assignedCAE = rand.nextInt(3) + 1;
-
-      // El nuevo constructor de Patient recibirá los booleanos estáticos
+      
       patients.add(new Patient(id, ti, gi, diMinutes, comesFromTheER, isGlaucoma, isReferredToHospital, needsFollowUp, assignedCAE, totalDays));
     }
 

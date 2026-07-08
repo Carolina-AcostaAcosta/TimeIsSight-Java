@@ -17,13 +17,25 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
+/**
+ * Orquesta la ejecución completa del programa: obtiene la configuración de arranque
+ * (por CLI o menú interactivo), prepara la instancia del problema y ejecuta la batería
+ * de configuraciones de optimización, exportando los resultados al finalizar.
+ */
 public class OptimizationRunner {
+  /** Configuración de un escenario dentro de la batería de pruebas. */
   private record Setting(String name, boolean useParallelSchedule, int parallelDaysAMonth) {}
+  /** Datos recogidos en la fase de arranque: qué hacer y con qué parámetros. */
   private record StartupData(String choice, int patients, int days, String JSONFile) {}
 
   private final SolverConfigFactory solverConfigFactory = new SolverConfigFactory();
   private final ResultsAnalyzer resultsAnalyzer = new ResultsAnalyzer();
 
+  /**
+   * Ejecuta el programa de principio a fin.
+   *
+   * @param args argumentos de línea de comandos (ver {@link CLIConfiguration})
+   */
   public void run(String[] args) {
     Logger timefoldLogger = (Logger) LoggerFactory.getLogger("ai.timefold.solver");
     timefoldLogger.setLevel(Level.WARN);
@@ -50,6 +62,13 @@ public class OptimizationRunner {
     ResultsExporter.save(results, new OptimizerOptions(false, 0, instance.patients().size(), instance.totalDays()));
   }
 
+  /**
+   * Decide qué acción de arranque tomar (nueva instancia o carga) a partir de la CLI,
+   * o mediante el menú interactivo si no se recibieron argumentos suficientes.
+   *
+   * @param config configuración recibida por línea de comandos
+   * @return los datos de arranque, o {@code null} si el usuario decidió salir en el menú
+   */
   private StartupData determineStartupData(CLIConfiguration config) {
     if (!config.isUseInteractiveMenu()) {
       if (config.isNewInstance()) {
@@ -76,6 +95,12 @@ public class OptimizationRunner {
     }
   }
 
+  /**
+   * Carga o genera la instancia del problema según los datos de arranque obtenidos.
+   *
+   * @param data datos de arranque (qué hacer y con qué parámetros)
+   * @return la instancia lista para usarse, o {@code null} si hubo un error crítico al cargarla
+   */
   private ProblemInstance prepareInstance(StartupData data) {
     if (data.choice().equals("LOAD")) {
       System.out.println("\nCargando población base desde: " + data.JSONFile());
@@ -94,6 +119,14 @@ public class OptimizationRunner {
     return newInstance;
   }
 
+  /**
+   * Ejecuta el solver sobre la misma instancia con cada una de las configuraciones
+   * de la batería (estándar y agenda paralela con distintos días al mes).
+   *
+   * @param instance instancia del problema sobre la que se ejecuta cada configuración
+   * @param solver   solver ya configurado, reutilizado para todas las configuraciones
+   * @return el resultado de cada configuración ejecutada
+   */
   private List<ResultsExporter.ConfigurationResult> executeOptimizerBattery(ProblemInstance instance, Solver<GlaucomaSchedule> solver) {
     List<Setting> settingBattery = List.of(
         new Setting("ESTÁNDAR (Sin Agenda Paralela)", false, 0),
@@ -133,6 +166,10 @@ public class OptimizationRunner {
     return results;
   }
 
+  /**
+   * Redirige la salida estándar y de error a un fichero de log con marca de tiempo,
+   * dentro de la carpeta {@code output}.
+   */
   private void configureConsoleTraceability() {
     try {
       Files.createDirectories(Paths.get("output"));

@@ -4,17 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Traduce entre minutos de simulación y días reales de calendario, descontando fines de
+ * semana y festivos. El mapeo se cachea por horizonte de días porque se invoca desde las
+ * restricciones del solver (una vez por cada {@link Appointment} de diagnóstico final evaluada),
+ * y recalcularlo desde cero cada vez sería muy costoso.
+ */
 public class WorkingCalendar {
-  // Cachea el mapeo de días laborables por totalDays, porque ahora se invoca desde las
-  // restricciones del solver (una vez por cada Appointment de diagnóstico final evaluada), y
-  // recalcularlo desde cero cada vez sería muy costoso.
   private static final java.util.Map<Integer, List<Integer>> cacheDaysMapping = new java.util.concurrent.ConcurrentHashMap<>();
 
-  // Genera el mapeo: Índice de día de trabajo -> Día real del año (0 a 364)
+  /**
+   * Genera (o recupera del caché) el mapeo: índice de día de trabajo -> día real del año (0 a 364).
+   *
+   * @param totalDays duración del horizonte de planificación, en días naturales
+   * @return la lista de días reales que son laborables, en orden
+   */
   public static List<Integer> generateDaysMapping(int totalDays) {
     return cacheDaysMapping.computeIfAbsent(totalDays, WorkingCalendar::calculateDaysMapping);
   }
 
+  // Calcula el mapeo de días laborables descontando fines de semana y una cantidad
+  // proporcional de festivos, con semilla fija para que el calendario sea estable.
   private static List<Integer> calculateDaysMapping(int totalDays) {
     List<Integer> workingCalendarDays = new ArrayList<>();
     List<Integer> potentialWorkingDays = new ArrayList<>();
@@ -27,7 +37,7 @@ public class WorkingCalendar {
     }
 
     int holidaysQuantity = (int) Math.round((totalDays / 365.0) * 13);
-    Random randCalendar = new Random(42); // Semilla fija para que coincida el calendario en toda la ejecución
+    Random randCalendar = new Random(42);
 
     List<Integer> holidays = new ArrayList<>();
     while (holidays.size() < Math.min(holidaysQuantity, potentialWorkingDays.size())) {
@@ -45,11 +55,23 @@ public class WorkingCalendar {
     return workingCalendarDays;
   }
 
+  /**
+   * Calcula los minutos hábiles totales disponibles en el horizonte de planificación.
+   *
+   * @param totalDays duración del horizonte de planificación, en días naturales
+   * @return los minutos hábiles totales (330 minutos por día laborable)
+   */
   public static int calculateOperationalMinutes(int totalDays) {
     return generateDaysMapping(totalDays).size() * 330; // 330 minutos útiles por día hábil
   }
 
-  // Método útil para traducir minutos de simulación a días de calendario reales
+  /**
+   * Traduce un minuto operativo de la simulación a su día real de calendario (0-364).
+   *
+   * @param operationalMinute minuto de simulación a traducir
+   * @param totalDays         duración del horizonte de planificación, en días naturales
+   * @return el día real de calendario correspondiente
+   */
   public static int getCalendarDay(int operationalMinute, int totalDays) {
     int operationalDay = operationalMinute / 330;
     List<Integer> map = generateDaysMapping(totalDays);

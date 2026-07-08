@@ -12,18 +12,26 @@ import com.glaucoma.domain.Appointment;
 import com.glaucoma.domain.GlaucomaSchedule;
 import com.glaucoma.solver.GlaucomaConstraintProvider;
 
+/**
+ * Construye el motor de optimización (solver) de Timefold con la configuración
+ * de fases y restricciones usada por la aplicación.
+ */
 public class SolverConfigFactory {
 
-  // Configuración limpia del motor metaheurístico
+  /**
+   * Configura y construye el solver de Timefold.
+   *
+   * @param maxTime tiempo máximo de ejecución del solver, en minutos
+   * @return el solver listo para resolver un {@link GlaucomaSchedule}
+   */
   public Solver<GlaucomaSchedule> configureSolver(long maxTime) {
-    // Fase de construcción rápida - Agregamos esto para que la construcción de las appointments iniciales no consuma todo el tiempo
-    // FIRST_FIT coloca la cita en el primer hueco viable que encuentra
+    // Fase de construcción rápida - Agregamos esto para que la construcción de las citas iniciales no consuma todo el tiempo
     ConstructionHeuristicPhaseConfig constructionPhase = new ConstructionHeuristicPhaseConfig()
         .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT);
 
     // Fase de búsqueda local
     // Tenemos que instanciarlo, ya que al configurar la fase de construcción esta desaparece
-    // Al inicializarla vacía, el solver usará sus algoritmos por defecto: Búsqueda tabú y Late Acceptance
+    // Al inicializarla vacía, el solver usará su algoritmo por defecto: Late Acceptance
     LocalSearchPhaseConfig localSearchPhase = new LocalSearchPhaseConfig();
 
     ScoreDirectorFactoryConfig scoreConfig = new ScoreDirectorFactoryConfig()

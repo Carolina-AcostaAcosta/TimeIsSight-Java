@@ -4,8 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Genera la ruta clínica (secuencia de citas) de un paciente concreto, según su gravedad,
+ * si viene derivado de urgencias, si está referido al hospital, y el tipo de agenda del escenario.
+ */
 public class RouteGenerator {
 
+  /**
+   * Genera la secuencia de citas que debe seguir un paciente en un escenario concreto.
+   *
+   * @param patient            paciente para el que se genera la ruta
+   * @param stations           estaciones disponibles en el escenario
+   * @param resources          recursos (doctores y máquinas) disponibles en el escenario
+   * @param parallel           indica si el escenario usa agenda paralela de Glaucoma
+   * @param parallelDaysAMonth días al mes con agenda paralela del escenario
+   * @param simulationEnd      minuto de simulación en el que termina el horizonte de planificación
+   * @return la ruta de citas generada para el paciente
+   */
   public List<Appointment> generateRoute(Patient patient, List<Station> stations, List<Resource> resources, boolean parallel, int parallelDaysAMonth, int simulationEnd) {
     List<Appointment> route = new ArrayList<>();
     int incrementalID = 1;
@@ -39,7 +54,7 @@ public class RouteGenerator {
       route.add(newAppointment(patient, incrementalID++, eCAE, docCAE, 5, false, simulationEnd, parallelDaysAMonth));
     }
 
-    // 3. PRUEBAS DIAGNÓSTICAS
+    // PRUEBAS DIAGNÓSTICAS
     route.add(newAppointment(patient, incrementalID++, eTests, rTonoCAE, 5, false, simulationEnd, parallelDaysAMonth));
     route.add(newAppointment(patient, incrementalID++, eTests, rRetinoCAE, 15, false, simulationEnd, parallelDaysAMonth));
 
@@ -48,7 +63,7 @@ public class RouteGenerator {
       route.add(newAppointment(patient, incrementalID++, eTests, rCampCAE, 15, false, simulationEnd, parallelDaysAMonth));
     }
 
-    // 4. ENRUTAMIENTO MÉDICO (Árbol de decisión)
+    // ENRUTAMIENTO MÉDICO (Árbol de decisión)
 
     // CASO A: Agenda Paralela activa y paciente con sospecha/glaucoma
     if (parallel && patient.getGi() > 0) {
@@ -60,7 +75,7 @@ public class RouteGenerator {
       Resource docCAE = myDoctorsCAE.get(rand.nextInt(myDoctorsCAE.size()));
 
       if (patient.isReferredToHospital()) {
-        // Sub-caso B.1: Derivado al hospital central
+        // Sub-caso B.1: Derivado al hospital
         route.add(newAppointment(patient, incrementalID++, eCAE, docCAE, 30, false, simulationEnd, parallelDaysAMonth));
 
         Resource rTonoHUC = resources.stream().filter(r -> r.id().equals("R_Tono_CHUC")).findFirst().orElseThrow(() -> new IllegalStateException("Falta el recurso R_Tono_HUC en la configuración"));
@@ -82,7 +97,7 @@ public class RouteGenerator {
           route.add(newAppointment(patient, incrementalID++, eHospital, docCHUC, 15, false, simulationEnd, parallelDaysAMonth));
         }
       } else {
-        // Subcaso B.2: Resuelto en el ambulatorio periférico
+        // Subcaso B.2: Resuelto en el CAE
         route.add(newAppointment(patient, incrementalID++, eCAE, docCAE, 30, true, simulationEnd, parallelDaysAMonth));
 
         if (patient.isNeedsFollowUp()) {
@@ -94,6 +109,7 @@ public class RouteGenerator {
     return route;
   }
 
+  // Crea una cita individual con un id incremental único dentro de la ruta del paciente
   private Appointment newAppointment(Patient patient, int index, Station station, Resource resource, int duration, boolean finalDiagnosis, int simulationEnd, int parallelDaysAMonth) {
     String appointmentID = patient.getId() + "-C" + index;
     return new Appointment(appointmentID, patient, station, resource, duration, finalDiagnosis, simulationEnd, parallelDaysAMonth);
